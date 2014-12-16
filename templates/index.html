@@ -1,0 +1,10 @@
+{% extends "master.html" %}
+{% block content %}
+		{% for flukso in fluksos %}
+		<div class="row">
+				<div class="col col-md-12">
+						<a href="/flukso/{{ flukso }}">{{ flukso }}</a>
+				</div>
+		</div>
+		{% endfor %}
+{% endblock %}
