@@ -12,6 +12,5 @@
 # [data]
 # folder: /path/to/opengrid/data
 [backend]
-library: /Users/Jan/opengrid/library
-houseprint: /Users/Jan/opengrid/scripts/hp_anonymous.pkl
+opengrid: /Users/Jan/opengrid
 figures: /Users/Jan/opengrid/data/figures

@@ -16,8 +16,6 @@ import cache_anonymous_houseprint as cah
 cah.cache()
 hp = houseprint.load_houseprint_from_file('hp_anonymous.pkl')
 
-
-
 @app.route("/")
 def index():
     return render_template('index.html', fluksos=hp.fluksosensors.keys())
