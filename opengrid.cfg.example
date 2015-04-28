@@ -1,0 +1,17 @@
+# Example configuration file for opengrid
+#
+# You can put a configuration file in the opengrid library
+# directory, in the 'current' directory and/or pass it to the 
+# constructor of the Config class. The latter always takes
+# presedence over the former.
+#
+# You will need to configure at least the two passwords below.
+#
+# Another interesting configuration property to change is
+# the path of the stored data (defaults to ~/.opengrid/data)
+# [data]
+# folder: /path/to/opengrid/data
+[backend]
+library: /Users/Jan/opengrid/library
+houseprint: /Users/Jan/opengrid/scripts/hp_anonymous.pkl
+figures: /Users/Jan/opengrid/data/figures
