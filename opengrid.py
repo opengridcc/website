@@ -52,12 +52,12 @@ def standby_vertical(sensorid):
 
     return send_file(filename, mimetype='image/png')
 
-@app.route("/timeseries/<sensorid>.png")
+@app.route("/timeseries/<sensorid>.html")
 def timeseries(sensorid):
     path = c.get('backend','figures')
-    filename = path + '/test.png'
+    filename = path + '/TimeSeries_'+sensorid+'.html'
 
-    return send_file(filename, mimetype='image/png')
+    return send_file(filename, mimetype='text/html')
 
 if __name__ == "__main__":
     app.run(debug=False,host='0.0.0.0',port=5000)
