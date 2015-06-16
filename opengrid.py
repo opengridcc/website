@@ -37,14 +37,14 @@ def sensor(sensorid):
       analyses=analyses
       )
 
-@app.route("/standby_horizontal/<sensorid>")
+@app.route("/standby_horizontal/<sensorid>.png")
 def standby_horizontal(sensorid):
     path = c.get('backend','figures')
     filename = path + '/standby_horizontal_'+sensorid+'.png'
 
     return send_file(filename, mimetype='image/png')
 
-@app.route("/standby_vertical/<sensorid>")
+@app.route("/standby_vertical/<sensorid>.png")
 def standby_vertical(sensorid):
 
     path = c.get('backend','figures')
