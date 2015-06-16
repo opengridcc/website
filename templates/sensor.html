@@ -1,6 +1,12 @@
 {% extends "master.html" %}
 {% block content %}
-{{ chartheader|safe }}
 <h2>{{ sensorid }}</h2>
-{{ chartcontent|safe }}
+	{% for analysis in analyses %}
+
+	<p>
+	<a href="{{url_for(analysis,sensorid=sensorid)}}">{{ analysis }}</a>
+	</p>
+
+	{% endfor %}
+
 {% endblock %}
