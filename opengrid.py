@@ -1,11 +1,7 @@
 #!/usr/bin/env python
 import sys
 from collections import namedtuple
-from flask import Flask
-from flask import render_template
-
-from arrow import Arrow
-from nvd3 import lineWithFocusChart
+from flask import Flask, render_template, send_file
 
 import config
 
@@ -33,34 +29,35 @@ def flukso(fluksoid):
 
 @app.route("/sensor/<sensorid>")
 def sensor(sensorid):
-    path_to_csv = c.get('data','folder')
-    start = Arrow.now().floor('day').replace(days=-7).datetime
-    end = Arrow.now().floor('day').datetime
-    df = fluksoapi.load(path_to_csv, [sensorid], start=start, end=end).fillna(0)
-    
-    if len(df.columns):
-        #Prepare chart name and epoch timescale
-        chart_name = "measured usage"
-        df["epoch"] = [(Arrow.fromdatetime(o) - Arrow(1970, 1, 1)).total_seconds()*1000 for o in df.index]
-        
-        #Create NVD3 chart
-        chart = lineWithFocusChart(x_is_date=True,name=chart_name,height=450,width=800)
-        series_name = "{}".format(hp.get_flukso_from_sensor(sensorid))
-        chart.add_serie(name=series_name, x=list(df["epoch"]), y=list(df[sensorid]))
-        
-        #Get chart HTML code
-        chart.buildhtmlheader()
-        chart.buildcontent()
-        chartheader = chart.htmlheader
-        chartcontent = chart.htmlcontent
-    else:
-        chartheader = ''
-        chartcontent = '<div>No Data</div>'
+
+    analyses = ['standby_horizontal','standby_vertical','timeseries']
     
     return render_template('sensor.html',
       sensorid=sensorid,
-      chartheader = chartheader,
-      chartcontent = chartcontent)
+      analyses=analyses
+      )
+
+@app.route("/standby_horizontal/<sensorid>")
+def standby_horizontal(sensorid):
+    path = c.get('backend','figures')
+    filename = path + '/standby_horizontal_'+sensorid+'.png'
+
+    return send_file(filename, mimetype='image/png')
+
+@app.route("/standby_vertical/<sensorid>")
+def standby_vertical(sensorid):
+
+    path = c.get('backend','figures')
+    filename = path + '/standby_vertical_'+sensorid+'.png'
+
+    return send_file(filename, mimetype='image/png')
+
+@app.route("/timeseries/<sensorid>.png")
+def timeseries(sensorid):
+    path = c.get('backend','figures')
+    filename = path + '/test.png'
+
+    return send_file(filename, mimetype='image/png')
 
 if __name__ == "__main__":
     app.run(debug=False,host='0.0.0.0',port=5000)
