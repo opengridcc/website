@@ -45,7 +45,7 @@ def standby_horizontal(sensorid):
     filename = path + '/standby_horizontal_'+sensorid+'.png'
 
     if not os.path.exists(filename):
-        flash('No graph found for this sensor')
+        flash('No standby_horizontal graph found for this sensor')
         return redirect(url_for('sensor', sensorid=sensorid))
 
     return send_file(filename, mimetype='image/png')
@@ -57,7 +57,7 @@ def standby_vertical(sensorid):
     filename = path + '/standby_vertical_'+sensorid+'.png'
 
     if not os.path.exists(filename):
-        flash('No graph found for this sensor')
+        flash('No standby_vertical graph found for this sensor')
         return redirect(url_for('sensor', sensorid=sensorid))
 
     return send_file(filename, mimetype='image/png')
@@ -68,7 +68,7 @@ def timeseries(sensorid):
     filename = path + '/TimeSeries_'+sensorid+'.html'
 
     if not os.path.exists(filename):
-        flash('No graph found for this sensor')
+        flash('No timeseries graph found for this sensor')
         return redirect(url_for('sensor', sensorid=sensorid))
 
     return send_file(filename, mimetype='text/html')
