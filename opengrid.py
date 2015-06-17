@@ -11,11 +11,11 @@ sys.path.append(c.get('backend','opengrid'))
 from library import houseprint, fluksoapi
 
 app = Flask(__name__)
-SECRET_KEY = "secret_key"
+SECRET_KEY = "secret_key" #TODO add a real key in the config file
 app.config.from_object(__name__)
 
 import cache_anonymous_houseprint as cah
-#cah.cache()
+cah.cache()
 hp = houseprint.load_houseprint_from_file('hp_anonymous.pkl')
 
 @app.route("/")
@@ -74,5 +74,5 @@ def timeseries(sensorid):
     return send_file(filename, mimetype='text/html')
 
 if __name__ == "__main__":
-    #app.run(debug=False,host='0.0.0.0',port=5000)
-    app.run(debug=True)
+    app.run(debug=False,host='0.0.0.0',port=5000) #TODO: implement switch between development and production mode in config file
+    #app.run(debug=True)
