@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-import sys
+import sys, os
 from collections import namedtuple
-from flask import Flask, render_template, send_file
+from flask import Flask, render_template, send_file, flash, redirect, url_for
 
 import config
 
@@ -11,9 +11,11 @@ sys.path.append(c.get('backend','opengrid'))
 from library import houseprint, fluksoapi
 
 app = Flask(__name__)
+SECRET_KEY = "secret_key"
+app.config.from_object(__name__)
 
 import cache_anonymous_houseprint as cah
-cah.cache()
+#cah.cache()
 hp = houseprint.load_houseprint_from_file('hp_anonymous.pkl')
 
 @app.route("/")
@@ -42,6 +44,10 @@ def standby_horizontal(sensorid):
     path = c.get('backend','figures')
     filename = path + '/standby_horizontal_'+sensorid+'.png'
 
+    if not os.path.exists(filename):
+        flash('No graph found for this sensor')
+        return redirect(url_for('sensor', sensorid=sensorid))
+
     return send_file(filename, mimetype='image/png')
 
 @app.route("/standby_vertical/<sensorid>.png")
@@ -50,6 +56,10 @@ def standby_vertical(sensorid):
     path = c.get('backend','figures')
     filename = path + '/standby_vertical_'+sensorid+'.png'
 
+    if not os.path.exists(filename):
+        flash('No graph found for this sensor')
+        return redirect(url_for('sensor', sensorid=sensorid))
+
     return send_file(filename, mimetype='image/png')
 
 @app.route("/timeseries/<sensorid>.html")
@@ -57,8 +67,12 @@ def timeseries(sensorid):
     path = c.get('backend','figures')
     filename = path + '/TimeSeries_'+sensorid+'.html'
 
+    if not os.path.exists(filename):
+        flash('No graph found for this sensor')
+        return redirect(url_for('sensor', sensorid=sensorid))
+
     return send_file(filename, mimetype='text/html')
 
 if __name__ == "__main__":
-    app.run(debug=False,host='0.0.0.0',port=5000)
-    #app.run(debug=True)
+    #app.run(debug=False,host='0.0.0.0',port=5000)
+    app.run(debug=True)
