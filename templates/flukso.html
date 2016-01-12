@@ -1,6 +1,13 @@
 {% extends "master.html" %}
 {% block content %}
 <p>
-{{ flukso }}
+            {{ flukso }}
+		{% for sensor in sensors %}
+		<div class="row">
+				<div class="col col-md-12">
+						{{ sensor.type }} - <a href="/sensor/{{ sensor.id }}">{{ sensor.id }}</a>
+				</div>
+		</div>
+		{% endfor %}
 </p>
 {% endblock %}
