@@ -1,6 +1,17 @@
 {% extends "master.html" %}
 {% block content %}
-<h2>{{ sensorid }} - {{ analysisname }}</h2>
+<p>
+    <a href="/flukso/{{ sensor.device.key }}">
+        {{ sensor.device.key }}
+    </a>
+    >
+    <a href="/sensor/{{ sensor.key }}">
+        {{ sensor.type }} {{ sensor.description }}
+    </a>
+    >
+    {{ analysisname }}
+</p>
+<h2>{{ sensor.description }} - {{ analysisname }}</h2>
 
 <img src="/figures/{{filename}}">
 

@@ -8,39 +8,50 @@ import config
 c = config.Config()
 
 sys.path.append(c.get('backend','opengrid'))
-from library import houseprint, fluksoapi
+from opengrid.library import houseprint
 
 app = Flask(__name__)
-SECRET_KEY = "secret_key" #TODO add a real key in the config file
+SECRET_KEY = "secret_key"  # TODO add a real key in the config file
 app.config.from_object(__name__)
 
-import cache_anonymous_houseprint as cah
-cah.cache()
-hp = houseprint.load_houseprint_from_file('hp_anonymous.pkl')
+hp = houseprint.Houseprint()
+
 
 @app.route("/")
 def index():
-    return render_template('index.html', fluksos=hp.fluksosensors.keys())
+    return render_template('index.html', fluksos=hp.get_devices())
+
 
 @app.route("/flukso/<fluksoid>")
 def flukso(fluksoid):
-    Sensor = namedtuple('Sensor', 'id, type')
-    return render_template('flukso.html', 
-      flukso=fluksoid,
-      sensors = [Sensor(id=s['Sensor'], type=s['Type']) for s in hp.fluksosensors[fluksoid].values() if s])
+    flukso = hp.find_device(fluksoid)
+
+    return render_template(
+            'flukso.html',
+            flukso=flukso,
+            sensors = flukso.get_sensors()
+    )
+
 
 @app.route("/sensor/<sensorid>")
 def sensor(sensorid):
 
-    analyses = ['standby_horizontal','standby_vertical','timeseries']
+    sensor = hp.find_sensor(sensorid)
+
+    analyses = ['timeseries']
+    if sensor.type == 'electricity' and not sensor.system == 'solar':
+        analyses.append('standby_horizontal')
+        analyses.append('standby_vertical')
     
     return render_template('sensor.html',
-      sensorid=sensorid,
+      sensor=sensor,
       analyses=analyses
       )
 
 @app.route("/standby_horizontal/<sensorid>")
 def standby_horizontal(sensorid):
+
+    sensor = hp.find_sensor(sensorid)
 
     filename = 'standby_horizontal_'+sensorid+'.png'
 
@@ -51,10 +62,12 @@ def standby_horizontal(sensorid):
     return render_template('analysis_image.html',
         analysisname = 'Standby Horizontal',
         filename = filename,
-        sensorid = sensorid)
+        sensor = sensor)
 
 @app.route("/standby_vertical/<sensorid>")
 def standby_vertical(sensorid):
+
+    sensor = hp.find_sensor(sensorid)
 
     filename = 'standby_vertical_'+sensorid+'.png'
 
@@ -65,10 +78,12 @@ def standby_vertical(sensorid):
     return render_template('analysis_image.html',
         analysisname = 'Standby Vertical',
         filename = filename,
-        sensorid = sensorid)
+        sensor = sensor)
 
 @app.route("/timeseries/<sensorid>")
 def timeseries(sensorid):
+
+    sensor = hp.find_sensor(sensorid)
 
     path = c.get('backend','figures')
     filename = 'TimeSeries_'+sensorid+'.html'
@@ -83,7 +98,7 @@ def timeseries(sensorid):
 
     return render_template('analysis_html.html',
         analysisname = 'Time Series',
-        sensorid = sensorid,
+        sensor = sensor,
         content = content)
 
 @app.route("/figures/<filename>")
@@ -100,5 +115,5 @@ def figure_exists(filename):
     return os.path.exists(file)
 
 if __name__ == "__main__":
-    app.run(debug=False,host='0.0.0.0',port=5000) #TODO: implement switch between development and production mode in config file
-    #app.run(debug=True)
+    #app.run(debug=False,host='0.0.0.0',port=5000) #TODO: implement switch between development and production mode in config file
+    app.run(debug=True)
