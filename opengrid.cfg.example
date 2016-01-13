@@ -14,3 +14,6 @@
 [backend]
 opengrid: /Users/Jan/opengrid
 figures: /Users/Jan/opengrid/data/figures
+
+[env]
+type: dev or prod
