@@ -126,5 +126,12 @@ def figure_exists(filename):
     return os.path.exists(file_path)
 
 if __name__ == "__main__":
-    app.run(debug=False,host='0.0.0.0',port=5000) #TODO: implement switch between development and production mode in config file
-    #app.run(debug=True)
+    try:
+        env = c.get('env','type')
+    except:
+        env = 'prod'
+
+    if env == 'dev':
+        app.run(debug=True)
+    else:
+        app.run(debug=False,host='0.0.0.0',port=5000)
