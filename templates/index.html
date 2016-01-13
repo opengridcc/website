@@ -3,7 +3,7 @@
 		{% for flukso in fluksos %}
 		<div class="row">
 				<div class="col col-md-12">
-						<a href="/flukso/{{ flukso }}">{{ flukso }}</a>
+						<p><a href="/flukso/{{ flukso.key }}">{{ flukso.key }}</a> ({{ flukso.number_of_sensors() }} sensors)</p>
 				</div>
 		</div>
 		{% endfor %}
