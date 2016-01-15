@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys, os
-from collections import namedtuple
 from flask import Flask, render_template, send_file, flash, redirect, url_for, safe_join, request
+from forms import SearchForm
 
 import config
 
@@ -124,6 +124,22 @@ def figure_exists(filename):
     file_path = safe_join(path,filename)
 
     return os.path.exists(file_path)
+
+
+@app.route("/search", methods=['GET', 'POST'])
+def search():
+
+    form = SearchForm()
+    if form.validate_on_submit():  # if the form is submitted
+        f = hp.find_device(form.search_string.data)
+        if f is not None:  # flukso was found
+            return redirect(url_for('flukso', fluksoid=f.key))
+        else:
+            flash("Sorry, we couldn't find that Fluksometer")
+
+    return render_template(
+            "search.html",
+            form=form)
 
 if __name__ == "__main__":
     try:
