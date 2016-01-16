@@ -130,7 +130,7 @@ def figure_exists(filename):
 def search():
 
     form = SearchForm()
-    if form.validate_on_submit():  # if the form is submitted
+    if request.method == 'POST' and form.validate():
         f = hp.find_device(form.search_string.data)
         if f is not None:  # flukso was found
             return redirect(url_for('flukso', fluksoid=f.key))

@@ -1,23 +1,14 @@
 {% extends "master.html" %}
 {% block content %}
 <div class="well">
-    <form class="form-horizontal" action="" method="post" name="search">
+    {% from "_formhelpers.html" import render_field %}
+    <form method=post action="/search">
         {{ form.hidden_tag() }}
-        <div class="control-group {% if form.errors.post %} error {% endif %}">
-            <label class="control-label" for="search_string">Flukso ID:</label>
-            <div class="controls">
-                {{ form.search_string(maxlength = 140, class = "span4") }}
-                {% for error in form.errors.search_string %}
-                    <span class="help-inline">[{{ error }}]</span><br>
-                {% endfor %}
-            </div>
-        </div>
-        <br>
-        <div class="control-group">
-            <div class="controls">
-                <input class="btn btn-primary" type="submit" value="Search">
-            </div>
-        </div>
+        <dl>
+            <label class="control-label">Flukso ID:</label>
+            {{ render_field(form.search_string) }}
+        </dl>
+    <p><input class="btn btn-primary" type=submit value=Search>
     </form>
 </div>
 {% endblock %}
