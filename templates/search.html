@@ -1,0 +1,14 @@
+{% extends "master.html" %}
+{% block content %}
+<div class="well">
+    {% from "_formhelpers.html" import render_field %}
+    <form method=post action="/search">
+        {{ form.hidden_tag() }}
+        <dl>
+            <label class="control-label">Flukso ID:</label>
+            {{ render_field(form.search_string) }}
+        </dl>
+    <p><input class="btn btn-primary" type=submit value=Search>
+    </form>
+</div>
+{% endblock %}
