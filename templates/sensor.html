@@ -1,21 +1,26 @@
 {% extends "master.html" %}
 {% block content %}
-<p>
-    <a href="/flukso/{{ sensor.device.key }}">
-        {{ sensor.device.key }}
-    </a>
-    > {{ sensor.type }} {{ sensor.description }}
-</p>
-<h2>{{sensor.description}}</h2>
-<h5>{{ sensor.key }}</h5>
-	{% for analysis in analyses %}
 
-	<p>
-		<a href="{{url_for(analysis,sensorid=sensor.key)}}">
-			{{ analysis }}
-		</>
-	</p>
+    <p>
+        <a href="/flukso/{{ sensor.device.key }}">
+            {{ sensor.device.key }}
+        </a>
+        >
+        {{ sensor.description }} ({{ sensor.type }})
+    </p>
 
-	{% endfor %}
+    <h1>{{ sensor.description }}</h1>
+    <h4>{{ sensor.key }}</h4>
+
+    <table class="table table-hover">
+        <tr>
+            <th>Available analyses</th>
+        </tr>
+        {% for analysis in analyses %}
+            <tr>
+                <td><a href="{{url_for(analysis, sensorid=sensor.key)}}">{{ analysis }}</a></td>
+            </tr>
+        {% endfor %}
+    </table>
 
 {% endblock %}
