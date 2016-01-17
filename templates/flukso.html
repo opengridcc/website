@@ -1,13 +1,18 @@
 {% extends "master.html" %}
 {% block content %}
-<p>
-            {{ flukso.key }}
-		{% for sensor in sensors %}
-		<div class="row">
-				<div class="col col-md-12">
-						<a href="/sensor/{{ sensor.key }}">{{ sensor.type }} {{ sensor.description }}</a> - {{ sensor.key }}
-				</div>
-		</div>
-		{% endfor %}
-</p>
+    <h1> {{ flukso.key }} </h1>
+    <table class="table table-hover">
+        <tr>
+            <th>Sensor Description</th>
+            <th>Type</th>
+            <th>ID</th>
+        </tr>
+        {% for sensor in sensors %}
+            <tr>
+                <td><a href="/sensor/{{ sensor.key }}">{{ sensor.description }}</a></td>
+                <td>{{ sensor.type }}</td>
+                <td>{{ sensor.key }}</td>
+            </tr>
+        {% endfor %}
+    </table>
 {% endblock %}
