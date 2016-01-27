@@ -26,9 +26,25 @@ except:
 else:
     hp.save("cache_hp.hp")
 
+
 @app.route("/")
 def index():
-    return render_template('index.html', fluksos=hp.get_devices())
+    return render_template('index.html')
+
+
+@app.route("/data")
+def data():
+    return render_template('data.html', fluksos=hp.get_devices())
+
+
+@app.route("/development")
+def development():
+    return render_template('development.html')
+
+
+@app.route("/subscribe")
+def subscribe():
+    return render_template('subscribe.html')
 
 
 @app.route("/flukso/<fluksoid>")
@@ -149,6 +165,7 @@ def search():
     return render_template(
             "search.html",
             form=form)
+
 
 @app.route("/download", methods=['GET', 'POST'])
 @app.route("/download/<guid>")

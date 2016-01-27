@@ -1,6 +1,10 @@
 {% extends "master.html" %}
 {% block content %}
-<p>
+<p class="breadcrumb">
+    <a href="{{ url_for('data') }}">
+                Data
+    </a>
+    >
     <a href="/flukso/{{ sensor.device.key }}">
         {{ sensor.device.key }}
     </a>

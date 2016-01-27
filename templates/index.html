@@ -1,17 +1,7 @@
 {% extends "master.html" %}
 {% block content %}
-    <table class="table table-hover">
-        <tr>
-            <th>Flukso ID</th>
-            <th>number of sensors</th>
-            <th>CSV data</th>
-        </tr>
-		{% for flukso in fluksos %}
-            <tr>
-                <td><a href="/flukso/{{ flukso.key }}">{{ flukso.key }}</a></td>
-                <td>{{ flukso.number_of_sensors() }}</td>
-                <td><a href="{{ url_for('download', guid=flukso.key) }}">download</a> </td>
-            </tr>
-        {% endfor %}
-    </table>
+    <h2>Welcome</h2>
+        <p class="well">Welcome to the opengrid website. Please use the upper menu bar to navigate.</p>
+    <h2>About</h2>
+        <p class="well">Opengrid is a collaborative project about energy and building data mining and automation. We believe there is a need for open source tools to analyse utility data, smart meter output, comfort measurements etc and to gain knowledge from these data streams. This knowledge can then be used to understand consumption patterns, realize energy savings, build smart automation applications, enable demand response, ...</p>
 {% endblock %}
