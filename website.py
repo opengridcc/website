@@ -16,11 +16,17 @@ app.config.from_object(__name__)
 
 hp = houseprint.Houseprint()
 
-
 @app.route("/")
 def index():
-    return render_template('index.html', fluksos=hp.get_devices())
+    return render_template('index.html')
 
+@app.route("/data")
+def data():
+    return render_template('data.html', fluksos=hp.get_devices())
+
+@app.route("/development")
+def development():
+    return render_template('development.html')
 
 @app.route("/flukso/<fluksoid>")
 def flukso(fluksoid):
