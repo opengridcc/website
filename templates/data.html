@@ -1,0 +1,22 @@
+{% extends "master.html" %}
+{% block content %}
+<p class="breadcrumb">
+    <a href="{{ url_for('data') }}">
+                Data
+    </a>
+</p>
+    <table class="table table-hover table-smallertext">
+        <tr>
+            <th>Flukso ID</th>
+            <th>number of sensors</th>
+            <th>CSV data</th>
+        </tr>
+		{% for flukso in fluksos %}
+            <tr>
+                <td><a href="/flukso/{{ flukso.key }}">{{ flukso.key }}</a></td>
+                <td>{{ flukso.number_of_sensors() }}</td>
+                <td><a href="{{ url_for('download', guid=flukso.key) }}">download</a> </td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}
