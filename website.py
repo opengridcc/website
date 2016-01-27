@@ -3,8 +3,9 @@ import sys
 import os
 import pandas as pd
 import config
-from flask import Flask, render_template, send_file, flash, redirect, url_for, safe_join, request
+from flask import Flask, render_template, send_file, flash, redirect, url_for, safe_join, request, abort
 from forms import SearchForm, DownloadForm
+
 if sys.version_info.major >= 3:
     from io import StringIO
 else:
@@ -12,7 +13,7 @@ else:
 
 c = config.Config()
 
-sys.path.append(c.get('backend','opengrid'))
+sys.path.append(c.get('backend', 'opengrid'))
 from opengrid.library import houseprint
 
 app = Flask(__name__)
@@ -29,6 +30,7 @@ else:
 
 
 @app.route("/")
+@app.route("/index")
 def index():
     return render_template('index.html')
 
@@ -52,6 +54,9 @@ def subscribe():
 def flukso(fluksoid):
     f = hp.find_device(fluksoid)
 
+    if f is None:
+        abort(404)
+
     return render_template(
             'flukso.html',
             flukso=f,
@@ -61,14 +66,16 @@ def flukso(fluksoid):
 
 @app.route("/sensor/<sensorid>")
 def sensor(sensorid):
-
     s = hp.find_sensor(sensorid)
+
+    if s is None:
+        abort(404)
 
     analyses = ['timeseries']
     if s.type == 'electricity' and not s.system == 'solar':
         analyses.append('standby_horizontal')
         analyses.append('standby_vertical')
-    
+
     return render_template(
             'sensor.html',
             sensor=s,
@@ -78,10 +85,9 @@ def sensor(sensorid):
 
 @app.route("/standby_horizontal/<sensorid>")
 def standby_horizontal(sensorid):
-
     s = hp.find_sensor(sensorid)
 
-    filename = 'standby_horizontal_'+sensorid+'.png'
+    filename = 'standby_horizontal_' + sensorid + '.png'
 
     if not figure_exists(filename):
         flash('No standby_horizontal graph found for this sensor')
@@ -97,7 +103,6 @@ def standby_horizontal(sensorid):
 
 @app.route("/standby_vertical/<sensorid>")
 def standby_vertical(sensorid):
-
     s = hp.find_sensor(sensorid)
 
     filename = 'standby_vertical_{}.png'.format(s.key)
@@ -108,25 +113,24 @@ def standby_vertical(sensorid):
 
     return render_template(
             'analysis_image.html',
-            analysisname = 'Standby Vertical',
-            filename = filename,
-            sensor = s)
+            analysisname='Standby Vertical',
+            filename=filename,
+            sensor=s)
 
 
 @app.route("/timeseries/<sensorid>")
 def timeseries(sensorid):
-
     s = hp.find_sensor(sensorid)
 
-    path = c.get('backend','figures')
+    path = c.get('backend', 'figures')
     filename = 'TimeSeries_{}.html'.format(s.key)
-    file_path = safe_join(path,filename)
+    file_path = safe_join(path, filename)
 
     if not os.path.exists(file_path):
         flash('No timeseries graph found for this sensor')
         return redirect(url_for('sensor', sensorid=sensorid))
 
-    with open (file_path, "r") as html_graph:
+    with open(file_path, "r") as html_graph:
         content = html_graph.read()
 
     return render_template(
@@ -139,22 +143,21 @@ def timeseries(sensorid):
 
 @app.route("/figures/<filename>")
 def figure(filename):
-    path = c.get('backend','figures')
-    file_path = safe_join(path,filename)
+    path = c.get('backend', 'figures')
+    file_path = safe_join(path, filename)
 
     return send_file(file_path)
 
 
 def figure_exists(filename):
-    path = c.get('backend','figures')
-    file_path = safe_join(path,filename)
+    path = c.get('backend', 'figures')
+    file_path = safe_join(path, filename)
 
     return os.path.exists(file_path)
 
 
 @app.route("/search", methods=['GET', 'POST'])
 def search():
-
     form = SearchForm()
     if request.method == 'POST' and form.validate():
         f = hp.find_device(form.search_string.data)
@@ -213,13 +216,20 @@ def download(guid=None):
             form=form
     )
 
+
+@app.errorhandler(404)
+def internal_error(error):
+    flash('ERROR 404 - Page not found')
+    return redirect(url_for('index'))
+
+
 if __name__ == "__main__":
     try:
-        env = c.get('env','type')
+        env = c.get('env', 'type')
     except:
         env = 'prod'
 
     if env == 'dev':
         app.run(debug=True)
     else:
-        app.run(debug=False,host='0.0.0.0',port=5000)
+        app.run(debug=False, host='0.0.0.0', port=5000)
