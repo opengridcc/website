@@ -4,7 +4,7 @@ from flask import Flask, render_template, send_file, flash, redirect, url_for, s
 from forms import SearchForm, DownloadForm
 if sys.version_info.major >= 3:
     from io import StringIO
-else
+else:
     from StringIO import StringIO
 
 import config
