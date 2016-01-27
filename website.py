@@ -156,17 +156,35 @@ def download(guid=None):
     form = DownloadForm()
 
     if request.method == 'POST' and form.validate():
-        s = hp.find_sensor(form.sensor_id.data)
+        s = hp.find_device(form.guid.data)
         if s is None:
-            flash("Sensor not found")
+            s = hp.find_sensor(form.guid.data)
+
+        if s is None:
+            flash("ID not found")
         else:
-            hp.get_tmpos()
-            output = StringIO()
-            s.get_data().to_csv(output, encoding='utf-8')
-            output.seek(0)
-            return send_file(output, mimetype="text/csv", as_attachment=True, attachment_filename='data.csv')
-    elif guid is not None:
-        form.sensor_id.data = guid
+            try:
+                # We need to connect and disconnect with tmpo
+                # to make sure the website doesn't lock access to the sqlite
+                hp.init_tmpo()
+                tmpos = hp.get_tmpos()
+                output = StringIO()
+                df = s.get_data()
+                tmpos.dbcon.close()
+            except:
+                # This will happen if another process is currently using the tmpo
+                flash("Error connecting to the data storage, please try again later")
+            else:
+                df.to_csv(output, encoding='utf-8')
+                output.seek(0)
+                return send_file(
+                        output,
+                        mimetype="text/csv",
+                        as_attachment=True,
+                        attachment_filename='{}.csv'.format(s.key)
+                )
+    if guid is not None:
+        form.guid.data = guid
 
     return render_template(
             'download.html',
