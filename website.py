@@ -1,13 +1,14 @@
 #!/usr/bin/env python
-import sys, os
+import sys
+import os
+import pandas as pd
+import config
 from flask import Flask, render_template, send_file, flash, redirect, url_for, safe_join, request
 from forms import SearchForm, DownloadForm
 if sys.version_info.major >= 3:
     from io import StringIO
 else:
     from StringIO import StringIO
-
-import config
 
 c = config.Config()
 
@@ -186,7 +187,11 @@ def download(guid=None):
                 hp.init_tmpo()
                 tmpos = hp.get_tmpos()
                 output = StringIO()
-                df = s.get_data()
+                df = s.get_data(
+                        head=pd.Timestamp(form.start.data),
+                        tail=pd.Timestamp(form.end.data),
+                        resample=form.resample.data
+                )
                 tmpos.dbcon.close()
             except:
                 # This will happen if another process is currently using the tmpo

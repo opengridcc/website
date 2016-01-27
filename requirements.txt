@@ -2,3 +2,4 @@ flask
 arrow
 python-nvd3
 flask-wtf
+pandas
