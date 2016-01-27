@@ -1,0 +1,16 @@
+{% extends "master.html" %}
+{% block content %}
+<h1>Download</h1>
+<p>Download sensor data as CSV</p>
+<div class="well">
+    {% from "_formhelpers.html" import render_field %}
+    <form method=post action="/download">
+        {{ form.hidden_tag() }}
+        <dl>
+            <label class="control-label">Sensor ID:</label>
+            {{ render_field(form.sensor_id) }}
+        </dl>
+    <p><input class="btn btn-primary" type=submit value=Search>
+    </form>
+</div>
+{% endblock %}
