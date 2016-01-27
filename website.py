@@ -28,6 +28,10 @@ def data():
 def development():
     return render_template('development.html')
 
+@app.route("/subscribe")
+def subscribe():
+    return render_template('subscribe.html')
+
 @app.route("/flukso/<fluksoid>")
 def flukso(fluksoid):
     f = hp.find_device(fluksoid)
