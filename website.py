@@ -37,7 +37,9 @@ def index():
 
 @app.route("/data")
 def data():
-    return render_template('data.html', fluksos=hp.get_devices())
+    devices = hp.get_devices()
+    devices.sort(key=lambda x: x.key)
+    return render_template('data.html', fluksos=devices)
 
 
 @app.route("/development")
