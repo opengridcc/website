@@ -59,10 +59,13 @@ def flukso(fluksoid):
     if f is None:
         abort(404)
 
+    sensors = f.get_sensors()
+    sensors.sort(key=lambda x: x.type)
+
     return render_template(
             'flukso.html',
             flukso=f,
-            sensors=f.get_sensors()
+            sensors=sensors
     )
 
 
