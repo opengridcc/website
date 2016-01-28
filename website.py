@@ -37,7 +37,9 @@ def index():
 
 @app.route("/data")
 def data():
-    return render_template('data.html', fluksos=hp.get_devices())
+    devices = hp.get_devices()
+    devices.sort(key=lambda x: x.key)
+    return render_template('data.html', fluksos=devices)
 
 
 @app.route("/development")
@@ -57,10 +59,13 @@ def flukso(fluksoid):
     if f is None:
         abort(404)
 
+    sensors = f.get_sensors()
+    sensors.sort(key=lambda x: x.type)
+
     return render_template(
             'flukso.html',
             flukso=f,
-            sensors=f.get_sensors()
+            sensors=sensors
     )
 
 
