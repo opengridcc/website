@@ -13,8 +13,11 @@ else:
 
 c = config.Config()
 
-sys.path.append(c.get('backend', 'opengrid'))
-from opengrid.library import houseprint
+try:
+    from opengrid.library import houseprint
+except ImportError:
+    sys.path.append(c.get('backend', 'opengrid'))
+    from opengrid.library import houseprint
 
 app = Flask(__name__)
 SECRET_KEY = "secret_key"  # TODO add a real key in the config file
