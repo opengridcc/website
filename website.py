@@ -13,8 +13,11 @@ else:
 
 c = config.Config()
 
-sys.path.append(c.get('backend', 'opengrid'))
-from opengrid.library import houseprint
+try:
+    from opengrid.library import houseprint
+except ImportError:
+    sys.path.append(c.get('backend', 'opengrid'))
+    from opengrid.library import houseprint
 
 app = Flask(__name__)
 SECRET_KEY = "secret_key"  # TODO add a real key in the config file
@@ -37,7 +40,9 @@ def index():
 
 @app.route("/data")
 def data():
-    return render_template('data.html', fluksos=hp.get_devices())
+    devices = hp.get_devices()
+    devices.sort(key=lambda x: x.key)
+    return render_template('data.html', fluksos=devices)
 
 
 @app.route("/development")
@@ -57,10 +62,13 @@ def flukso(fluksoid):
     if f is None:
         abort(404)
 
+    sensors = f.get_sensors()
+    sensors.sort(key=lambda x: x.type)
+
     return render_template(
             'flukso.html',
             flukso=f,
-            sensors=f.get_sensors()
+            sensors=sensors
     )
 
 
