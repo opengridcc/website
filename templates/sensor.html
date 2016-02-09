@@ -19,22 +19,21 @@
     <h2>Available analyses</h2>
     <div class="well">
         {% for analysis in analyses %}
-                <p><a href="#{{analysis}}">{{ analysis }}</a></p>
+                <p><a href="#{{ analysis.title }}">{{ analysis.title }}</a></p>
         {% endfor %}
     </div>
 
-    {% for html in htmls %}
-    <a name="{{ html }}"></a>
-    <h1>{{ html }}</h1>
+    {% for analysis in analyses %}
+    <a name="{{ analysis.title }}"></a>
+    <h1>{{ analysis.title }}</h1>
     <div class="well">
-        {{ htmls[html]|safe }}
-    </div>
-    {% endfor %}
-    {% for figure in figures %}
-    <a name="{{ figure }}"></a>
-    <h1>{{ figure }}</h1>
-    <div class="well">
-        <img src="/figures/{{ figures[figure] }}">
+        {% if analysis.is_html() %}
+            {{ analysis.get_content()|safe }}
+        {% elif analysis.is_figure() %}
+            <img src="/figures/{{ analysis.get_content() }}">
+        {% endif %}
+        <br>
+        <p>{{ analysis.description }}</p>
     </div>
     {% endfor %}
 

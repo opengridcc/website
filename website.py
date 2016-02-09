@@ -5,6 +5,7 @@ import pandas as pd
 import config
 from flask import Flask, render_template, send_file, flash, redirect, url_for, safe_join, request, abort
 from forms import SearchForm, DownloadForm, EmptyForm
+import plot
 
 if sys.version_info.major >= 3:
     from io import StringIO
@@ -79,37 +80,46 @@ def sensor(sensorid):
     if s is None:
         abort(404)
 
-    analyses = ['Timeseries']
-    if s.type == 'electricity' and not s.system == 'solar':
-        analyses.append('Standby Horizontal')
-        analyses.append('Standby Vertical')
-
-    figures = {}
-    htmls = {}
-
     path = c.get('backend', 'figures')
 
-    filename_1 = 'TimeSeries_{}.html'.format(s.key)
-    file_path = safe_join(path, filename_1)
-    if os.path.exists(file_path):
-        with open(file_path, "r") as html_graph:
-            htmls.update({'Timeseries':html_graph.read()})
+    analyses = []
+
+    # create timeseries plot
+    filename = 'TimeSeries_{}.html'.format(s.key)
+    analyses.append(
+            plot.Html(
+                    title='Timeseries',
+                    content=safe_join(path, filename),
+                    description='Uitleg' # TODO Change description
+            )
+    )
 
     if s.type == 'electricity' and not s.system == 'solar':
-        filename_2 = 'standby_horizontal_' + sensorid + '.png'
-        if figure_exists(filename_2):
-            figures.update({'Standby Horizontal':filename_2})
-        filename_3 = 'standby_vertical_{}.png'.format(s.key)
-        if figure_exists(filename_3):
-            figures.update({'Standby Vertical':filename_3})
+        # create standby horizontal
+        filename = 'standby_horizontal_{}.png'.format(s.key)
+        analyses.append(
+            plot.Figure(
+                title='Standby Horizontal',
+                content=filename,
+                description='Uitleg' # TODO Change description
+            )
+        )
+        # create standby vertical
+        filename = 'standby_vertical_{}.png'.format(s.key)
+        analyses.append(
+            plot.Figure(
+                title='Standby Vertical',
+                content=filename,
+                description='Uitleg' # TODO Change description
+            )
+        )
 
+    analyses = [analysis for analysis in analyses if analysis.has_content()]
 
     return render_template(
         'sensor.html',
         sensor=s,
-        analyses=analyses,
-        htmls=htmls,
-        figures=figures
+        analyses=analyses
     )
 
 
