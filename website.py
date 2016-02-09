@@ -79,73 +79,37 @@ def sensor(sensorid):
     if s is None:
         abort(404)
 
-    analyses = ['timeseries']
+    analyses = ['Timeseries']
     if s.type == 'electricity' and not s.system == 'solar':
-        analyses.append('standby_horizontal')
-        analyses.append('standby_vertical')
+        analyses.append('Standby Horizontal')
+        analyses.append('Standby Vertical')
 
-    return render_template(
-            'sensor.html',
-            sensor=s,
-            analyses=analyses
-    )
-
-
-@app.route("/standby_horizontal/<sensorid>")
-def standby_horizontal(sensorid):
-    s = hp.find_sensor(sensorid)
-
-    filename = 'standby_horizontal_' + sensorid + '.png'
-
-    if not figure_exists(filename):
-        flash('No standby_horizontal graph found for this sensor')
-        return redirect(url_for('sensor', sensorid=sensorid))
-
-    return render_template(
-            'analysis_image.html',
-            analysisname='Standby Horizontal',
-            filename=filename,
-            sensor=s
-    )
-
-
-@app.route("/standby_vertical/<sensorid>")
-def standby_vertical(sensorid):
-    s = hp.find_sensor(sensorid)
-
-    filename = 'standby_vertical_{}.png'.format(s.key)
-
-    if not figure_exists(filename):
-        flash('No standby_vertical graph found for this sensor')
-        return redirect(url_for('sensor', sensorid=sensorid))
-
-    return render_template(
-            'analysis_image.html',
-            analysisname='Standby Vertical',
-            filename=filename,
-            sensor=s)
-
-
-@app.route("/timeseries/<sensorid>")
-def timeseries(sensorid):
-    s = hp.find_sensor(sensorid)
+    figures = {}
+    htmls = {}
 
     path = c.get('backend', 'figures')
-    filename = 'TimeSeries_{}.html'.format(s.key)
-    file_path = safe_join(path, filename)
 
-    if not os.path.exists(file_path):
-        flash('No timeseries graph found for this sensor')
-        return redirect(url_for('sensor', sensorid=sensorid))
+    filename_1 = 'TimeSeries_{}.html'.format(s.key)
+    file_path = safe_join(path, filename_1)
+    if os.path.exists(file_path):
+        with open(file_path, "r") as html_graph:
+            htmls.update({'Timeseries':html_graph.read()})
 
-    with open(file_path, "r") as html_graph:
-        content = html_graph.read()
+    if s.type == 'electricity' and not s.system == 'solar':
+        filename_2 = 'standby_horizontal_' + sensorid + '.png'
+        if figure_exists(filename_2):
+            figures.update({'Standby Horizontal':filename_2})
+        filename_3 = 'standby_vertical_{}.png'.format(s.key)
+        if figure_exists(filename_3):
+            figures.update({'Standby Vertical':filename_3})
+
 
     return render_template(
-            'analysis_html.html',
-            analysisname='Time Series',
-            sensor=s,
-            content=content
+        'sensor.html',
+        sensor=s,
+        analyses=analyses,
+        htmls=htmls,
+        figures=figures
     )
 
 
