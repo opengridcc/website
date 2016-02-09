@@ -4,7 +4,7 @@ import os
 import pandas as pd
 import config
 from flask import Flask, render_template, send_file, flash, redirect, url_for, safe_join, request, abort
-from forms import SearchForm, DownloadForm
+from forms import SearchForm, DownloadForm, EmptyForm
 
 if sys.version_info.major >= 3:
     from io import StringIO
@@ -222,6 +222,27 @@ def download(guid=None):
     return render_template(
             'download.html',
             form=form
+    )
+
+
+@app.route("/issue30", methods=['GET', 'POST'])
+def issue30():
+    form = EmptyForm() # Empty form, only validates the secret token to protect against cross-site scripting
+
+    if request.method == 'POST' and form.validate():
+        try:
+            hp.init_tmpo()
+            tmpos = hp.get_tmpos()
+            hp.sync_tmpos()
+            tmpos.dbcon.close()
+        except:
+            flash("Error syncing TMPO, please try again later")
+        else:
+            flash("TMPO Sync Successful")
+
+    return render_template(
+        'issue30.html',
+        form=form
     )
 
 
