@@ -16,15 +16,26 @@
     <h3>{{ sensor.device.key }} > {{ sensor.description }}</h3>
     <p class="sensor">Sensor-id: {{ sensor.key }}</p>
 
-    <table class="table table-hover table-smallertext">
-        <tr>
-            <th>Available analyses</th>
-        </tr>
+    <h2>Available analyses</h2>
+    <div class="well">
         {% for analysis in analyses %}
-            <tr>
-                <td><a href="{{url_for(analysis, sensorid=sensor.key)}}">{{ analysis }}</a></td>
-            </tr>
+                <p><a href="#{{analysis}}">{{ analysis }}</a></p>
         {% endfor %}
-    </table>
+    </div>
+
+    {% for html in htmls %}
+    <a name="{{ html }}"></a>
+    <h1>{{ html }}</h1>
+    <div class="well">
+        {{ htmls[html]|safe }}
+    </div>
+    {% endfor %}
+    {% for figure in figures %}
+    <a name="{{ figure }}"></a>
+    <h1>{{ figure }}</h1>
+    <div class="well">
+        <img src="/figures/{{ figures[figure] }}">
+    </div>
+    {% endfor %}
 
 {% endblock %}
