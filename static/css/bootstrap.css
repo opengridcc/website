@@ -6346,12 +6346,11 @@ button.close {
 .jumbotron {
     margin-bottom: 0px;
     /*background-image: url(../images/logo_small.png);*/
-    background-color: #784421;
+    background-color: #F8F8F8;
     background-position: 0% 0%;
     background-size: cover;
     background-repeat: no-repeat;
-    color: white;
-    text-shadow: black 0.15em 0.15em 0.15em;
+
 }
 }
 /*# sourceMappingURL=bootstrap.css.map */
