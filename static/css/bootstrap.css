@@ -6361,7 +6361,7 @@ button.close {
     height: 33px;
     left: -70px;
     overflow: hidden;
-    position: absolute;
+    position: relative;
     transform: rotate(45deg);
     width: 300px;
 }
