@@ -1,5 +1,19 @@
 {% extends "master.html" %}
 {% block content %}
-    <h2>Development</h2>
-    <p class="well">You want to contribute to the opengrid project? Please take a look at our <a href="https://github.com/opengridcc/opengrid/wiki">github wiki page</a>.</p>
+<h2>Get Involved</h2>
+<div class="well">
+    <p>
+        Do you want to discuss graphs, analyses, and other website features? Join the discussion in our <a
+            href="https://groups.google.com/d/forum/opengrid-private">Google Discussion Group</a>.
+    </p>
+    <p>
+        Do you want to connect your own Fluksometer to Opengrid? <a href="{{ url_for('subscribe') }}">Fill in the
+        subscription form</a>
+    </p>
+</div>
+<h2>Development</h2>
+<p class="well">
+    Do you want to contribute to the Opengrid code? Please take a look at our <a
+        href="https://github.com/opengridcc/opengrid/wiki">GitHub page</a>.
+</p>
 {% endblock %}
