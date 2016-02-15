@@ -4,8 +4,10 @@ import os
 class Plot(object):
     def __init__(self, title, description, content=None):
         self.title = title
-        self.set_content(content)
         self.description = description
+        self._content = None
+
+        self.set_content(content)
 
     def set_content(self, content):
         self._content = content

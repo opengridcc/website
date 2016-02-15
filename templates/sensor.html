@@ -33,7 +33,7 @@
             <img src="/figures/{{ analysis.get_content() }}">
         {% endif %}
         <br>
-        <p>{{ analysis.description }}</p>
+        <p>{{ analysis.description|safe }}</p>
     </div>
     {% endfor %}
 

@@ -116,7 +116,7 @@ def sensor(sensorid):
                              you get an idea of your position in the opengrid community.\
                              The right plot shows your measured power consumption of {sensordescription} for the last night.\
                              This may give you an idea of what's going on in the night. Try to switch something off tonight and\
-                             come back tomorrow to this graph to see the effect!\n\
+                             come back tomorrow to this graph to see the effect!<br>\
                              Attention, the graph is currently in UTC!  Add one hour to find Belgian winter-time, and\
                              two hours to find Belgian summer-time.".format(sensordescription=s.description,
                                                                             unit=units.get(s.type))
@@ -134,7 +134,7 @@ def sensor(sensorid):
                              Again, this allows you to get an idea of your standby power in comparison to the opengrid community.\
                              The right plot shows your measured power consumption of {sensordescription} for the last night.\
                              This may give you an idea of what's going on in the night. Try to switch something off tonight and\
-                             come back tomorrow to this graph to see the effect!\n\
+                             come back tomorrow to this graph to see the effect!<br>\
                              Attention, the graph is currently in UTC!  Add one hour to find Belgian winter-time, and\
                              two hours to find Belgian summer-time.\
                              Which of these two graphs do you prefer? Let us know in the forum!".format(sensordescription=s.description,
