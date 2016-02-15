@@ -5,6 +5,7 @@ import pandas as pd
 import config
 from flask import Flask, render_template, send_file, flash, redirect, url_for, safe_join, request, abort
 from forms import SearchForm, DownloadForm, EmptyForm
+import plot
 
 if sys.version_info.major >= 3:
     from io import StringIO
@@ -79,37 +80,74 @@ def sensor(sensorid):
     if s is None:
         abort(404)
 
-    analyses = ['Timeseries']
-    if s.type == 'electricity' and not s.system == 'solar':
-        analyses.append('Standby Horizontal')
-        analyses.append('Standby Vertical')
-
-    figures = {}
-    htmls = {}
-
     path = c.get('backend', 'figures')
 
-    filename_1 = 'TimeSeries_{}.html'.format(s.key)
-    file_path = safe_join(path, filename_1)
-    if os.path.exists(file_path):
-        with open(file_path, "r") as html_graph:
-            htmls.update({'Timeseries':html_graph.read()})
+    analyses = []
+    units = dict(electricity="Watt",
+                 gas="Watt",
+                 water="liter/min")
+
+    # create timeseries plot
+    filename = 'TimeSeries_{}.html'.format(s.key)
+    analyses.append(
+            plot.Html(
+                    title='Timeseries',
+                    content=safe_join(path, filename),
+                    description=u"This interactive graph  shows the measurement of {sensordescription} over the last 7 days.\
+                                 The unit of the data is {unit}, and the graph contains minute values.\
+                                 The graph is interactive: use the bottom ruler to zoom in/out and to change the period.\
+                                 Attention, the graph is currently in UTC!  Add one hour to find Belgian winter-time, and\
+                                 two hours to find Belgian summer-time.".format(sensordescription=s.description,
+                                                                                unit=units.get(s.type))
+            )
+    )
 
     if s.type == 'electricity' and not s.system == 'solar':
-        filename_2 = 'standby_horizontal_' + sensorid + '.png'
-        if figure_exists(filename_2):
-            figures.update({'Standby Horizontal':filename_2})
-        filename_3 = 'standby_vertical_{}.png'.format(s.key)
-        if figure_exists(filename_3):
-            figures.update({'Standby Vertical':filename_3})
+        # create standby horizontal
+        filename = 'standby_horizontal_{}.png'.format(s.key)
+        analyses.append(
+            plot.Figure(
+                title='Standby Horizontal',
+                content=filename,
+                description=u"This figure shows the electric standby power of {sensordescription} (in {unit}). \
+                             The left plot shows your standby power over the last 10 days (red diamonds). The distribution\
+                             of the standby power of other opengrid families is shown as a boxplot. The red line is the median,\
+                             the box limits are the 25th and 75th percentiles. By comparing your standby power to this box,\
+                             you get an idea of your position in the opengrid community.\
+                             The right plot shows your measured power consumption of {sensordescription} for the last night.\
+                             This may give you an idea of what's going on in the night. Try to switch something off tonight and\
+                             come back tomorrow to this graph to see the effect!<br>\
+                             Attention, the graph is currently in UTC!  Add one hour to find Belgian winter-time, and\
+                             two hours to find Belgian summer-time.".format(sensordescription=s.description,
+                                                                            unit=units.get(s.type))
+        )
+        )
+        # create standby vertical
+        filename = 'standby_vertical_{}.png'.format(s.key)
+        analyses.append(
+            plot.Figure(
+                title='Standby Vertical',
+                content=filename,
+                description=u"This figure also shows the electric standby power of {sensordescription} (in {unit}). \
+                             The left plot shows your standby power over the last 40 days (red diamonds).\
+                             The standby power of other opengrid families is indicated by the 10th, 50th and 90th percentile.\
+                             Again, this allows you to get an idea of your standby power in comparison to the opengrid community.\
+                             The right plot shows your measured power consumption of {sensordescription} for the last night.\
+                             This may give you an idea of what's going on in the night. Try to switch something off tonight and\
+                             come back tomorrow to this graph to see the effect!<br>\
+                             Attention, the graph is currently in UTC!  Add one hour to find Belgian winter-time, and\
+                             two hours to find Belgian summer-time.\
+                             Which of these two graphs do you prefer? Let us know in the forum!".format(sensordescription=s.description,
+                                                                                                        unit=units.get(s.type))
+            )
+        )
 
+    analyses = [analysis for analysis in analyses if analysis.has_content()]
 
     return render_template(
         'sensor.html',
         sensor=s,
-        analyses=analyses,
-        htmls=htmls,
-        figures=figures
+        analyses=analyses
     )
 
 
