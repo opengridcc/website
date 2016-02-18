@@ -95,9 +95,8 @@ def sensor(sensorid):
                     content=safe_join(path, filename),
                     description=u"This interactive graph  shows the measurement of {sensordescription} over the last 7 days.\
                                  The unit of the data is {unit}, and the graph contains minute values.\
-                                 The graph is interactive: use the bottom ruler to zoom in/out and to change the period.<br>\
-                                 Attention, the graph is currently in UTC!  Add one hour to find Belgian winter-time, and\
-                                 two hours to find Belgian summer-time.".format(sensordescription=s.description,
+                                 The graph is interactive: use the bottom ruler to zoom in/out and to change the period. \
+                                 The graph is in local time (for Belgium).".format(sensordescription=s.description,
                                                                                 unit=units.get(s.type))
             )
     )
