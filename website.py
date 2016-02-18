@@ -95,7 +95,7 @@ def sensor(sensorid):
                     content=safe_join(path, filename),
                     description=u"This interactive graph  shows the measurement of {sensordescription} over the last 7 days.\
                                  The unit of the data is {unit}, and the graph contains minute values.\
-                                 The graph is interactive: use the bottom ruler to zoom in/out and to change the period.\
+                                 The graph is interactive: use the bottom ruler to zoom in/out and to change the period.<br>\
                                  Attention, the graph is currently in UTC!  Add one hour to find Belgian winter-time, and\
                                  two hours to find Belgian summer-time.".format(sensordescription=s.description,
                                                                                 unit=units.get(s.type))
@@ -107,7 +107,7 @@ def sensor(sensorid):
         filename = 'standby_horizontal_{}.png'.format(s.key)
         analyses.append(
             plot.Figure(
-                title='Standby Horizontal',
+                title='Standby 10 days',
                 content=filename,
                 description=u"This figure shows the electric standby power of {sensordescription} (in {unit}). \
                              The left plot shows your standby power over the last 10 days (red diamonds). The distribution\
@@ -116,17 +116,15 @@ def sensor(sensorid):
                              you get an idea of your position in the opengrid community.\
                              The right plot shows your measured power consumption of {sensordescription} for the last night.\
                              This may give you an idea of what's going on in the night. Try to switch something off tonight and\
-                             come back tomorrow to this graph to see the effect!<br>\
-                             Attention, the graph is currently in UTC!  Add one hour to find Belgian winter-time, and\
-                             two hours to find Belgian summer-time.".format(sensordescription=s.description,
-                                                                            unit=units.get(s.type))
+                             come back tomorrow to this graph to see the effect!".format(sensordescription=s.description,
+                                                                                         unit=units.get(s.type))
         )
         )
         # create standby vertical
         filename = 'standby_vertical_{}.png'.format(s.key)
         analyses.append(
             plot.Figure(
-                title='Standby Vertical',
+                title='Standby 40 days',
                 content=filename,
                 description=u"This figure also shows the electric standby power of {sensordescription} (in {unit}). \
                              The left plot shows your standby power over the last 40 days (red diamonds).\
@@ -134,11 +132,10 @@ def sensor(sensorid):
                              Again, this allows you to get an idea of your standby power in comparison to the opengrid community.\
                              The right plot shows your measured power consumption of {sensordescription} for the last night.\
                              This may give you an idea of what's going on in the night. Try to switch something off tonight and\
-                             come back tomorrow to this graph to see the effect!<br>\
-                             Attention, the graph is currently in UTC!  Add one hour to find Belgian winter-time, and\
-                             two hours to find Belgian summer-time.\
-                             Which of these two graphs do you prefer? Let us know in the forum!".format(sensordescription=s.description,
-                                                                                                        unit=units.get(s.type))
+                             come back tomorrow to this graph to see the effect!<br><br>\
+                             Which of these two graphs do you prefer? Let us know in the\
+                             <a href=\"https://groups.google.com/d/forum/opengrid-private\">forum</a>".format(sensordescription=s.description,
+                                                                                                              unit=units.get(s.type))
             )
         )
 
