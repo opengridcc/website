@@ -50,6 +50,9 @@ def data():
 def development():
     return render_template('development.html')
 
+@app.route("/enquiry")
+def enquiry():
+    return render_template('enquiry.html')
 
 @app.route("/flukso/<fluksoid>")
 def flukso(fluksoid):
