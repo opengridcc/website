@@ -128,10 +128,29 @@ def sensor(sensorid):
                              This may give you an idea of what's going on in the night. Try to switch something off tonight and\
                              come back tomorrow to this graph to see the effect!<br><br>\
                              Which of these two graphs do you prefer? Let us know in the\
-                             <a href=\"https://groups.google.com/d/forum/opengrid-private\">forum</a>".format(sensordescription=s.description,
+                             <a href=\"https://groups.google.com/d/forum/opengrid-private\">forum</a>.".format(sensordescription=s.description,
                                                                                                               unit=units.get(s.type))
             )
         )
+
+    # create carpet plot
+    filename = 'carpet_{}_{}.png'.format(s.type, s.key)
+    analyses.append(
+        plot.Figure(
+            title='Carpet plot',
+            content=filename,
+            description=u"This plot shows the measurement of {sensordescription} over the last 3 weeks in a 'raster'. \
+                         Each day is a single row in the 'raster', the horizontal axis is time (0-24h).\
+                         The intensity of the measurement is plotted as a color: blue is low, red is high.  <br><br> \
+                         The plot shows when the consumption typically takes place. \
+                         This is useful discover trends or patterns over a day or week.\
+                         This allows to check if systems are correctly scheduled (night set-back for heating, clock for\
+                         an electrical boiler, etc. )<br><br>\
+                         Do you think this is useful? Let us know in the\
+                         <a href=\"https://groups.google.com/d/forum/opengrid-private\">forum</a>.".format(sensordescription=s.description)
+        )
+    )
+
 
     analyses = [analysis for analysis in analyses if analysis.has_content()]
 
