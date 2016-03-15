@@ -1,17 +1,35 @@
 {% extends "master.html" %}
 {% block content %}
     <div class="jumbotron">
-        <h1>Welcome to Opengrid!</h1>
+        <h1>Welcome to Opengrid</h1>
         <p>Opengrid is a collaborative project about energy and building data mining and automation. We believe
         there is a need for open source tools to analyse utility data, smart meter output, comfort measurements etc and to
         gain knowledge from these data streams. This knowledge can then be used to understand consumption patterns, realize
         energy savings, build smart automation applications, enable demand response, ...</p>
         <p><a class="btn btn-primary btn-lg" href="{{ url_for('development') }}" role="button">Subscribe to the project</a></p>
     </div>
-    <!--
-    <h2>About</h2>
-    <p class="well">Opengrid is a collaborative project about energy and building data mining and automation. We believe
-        there is a need for open source tools to analyse utility data, smart meter output, comfort measurements etc and to
-        gain knowledge from these data streams. This knowledge can then be used to understand consumption patterns, realize
-        energy savings, build smart automation applications, enable demand response, ...</p>-->
+    <div class="jumbotron">
+        <h1>OpenGrid double event!!</h1>
+        <p>
+            In April, Friday 22 and Saturday 23, we organise grid:camp. On the second day of grid:camp, we also organise
+            opengrid café.  Find more information about both events below.
+        </p>
+        <p><a class="btn btn-primary btn-lg" href="{{ url_for('development') }}" role="button">Subscribe to grid:camp or opengrid café</a></p>.
+    </div>
+    <table style="width:100%">
+      <tr>
+        <td><h1>grid:camp</h1></td>
+        <td><h1>openrid café</h1></td>
+      </tr>
+      <tr>
+        <td>Meetup for hackers, barcamp style.  Anyone with a passion for building monitoring, home automation,
+            electronics, data analysis, energy savings etc... can join.   </td>
+        <td>Uitleg2</td>
+      </tr>
+      <tr>
+        <td><img src="{{url_for('static', filename='images/grid.camp.2016.04.draft.jpg')}}" /></td>
+        <td><img src="{{url_for('static', filename='images/grid.camp.2016.04.draft.jpg')}}" /></td>
+      </tr>
+
+    </table>
 {% endblock %}
