@@ -27,10 +27,17 @@ app.config.from_object(__name__)
 try:
     hp = houseprint.Houseprint()
 except:
-    print("Connection failed, loading houseprint from cache")
-    hp = houseprint.load_houseprint_from_file("cache_hp.hp")
+    try:
+        hp = houseprint.Houseprint(gjson=c.get('houseprint','json'))
+    except:
+        print("Connection failed, loading houseprint from cache")
+        hp = houseprint.load_houseprint_from_file("cache_hp.hp")
+    else:
+        hp.save("cache_hp.hp")
 else:
     hp.save("cache_hp.hp")
+
+hp.init_tmpo()
 
 
 @app.route("/")
@@ -62,9 +69,9 @@ def flukso(fluksoid):
     sensors.sort(key=lambda x: x.type)
 
     return render_template(
-            'flukso.html',
-            flukso=f,
-            sensors=sensors
+        'flukso.html',
+        flukso=f,
+        sensors=sensors
     )
 
 
@@ -85,15 +92,15 @@ def sensor(sensorid):
     # create timeseries plot
     filename = 'TimeSeries_{}.html'.format(s.key)
     analyses.append(
-            plot.Html(
-                    title='Timeseries',
-                    content=safe_join(path, filename),
-                    description=u"This interactive graph  shows the measurement of {sensordescription} over the last 7 days.\
+        plot.Html(
+            title='Timeseries',
+            content=safe_join(path, filename),
+            description=u"This interactive graph  shows the measurement of {sensordescription} over the last 7 days.\
                                  The unit of the data is {unit}, and the graph contains minute values.\
                                  The graph is interactive: use the bottom ruler to zoom in/out and to change the period. \
                                  The graph is in local time (for Belgium).".format(sensordescription=s.description,
-                                                                                unit=units.get(s.type))
-            )
+                                                                                   unit=units.get(s.type))
+        )
     )
 
     if s.type == 'electricity' and not s.system == 'solar':
@@ -110,9 +117,10 @@ def sensor(sensorid):
                              you get an idea of your position in the opengrid community.\
                              The right plot shows your measured power consumption of {sensordescription} for the last night.\
                              This may give you an idea of what's going on in the night. Try to switch something off tonight and\
-                             come back tomorrow to this graph to see the effect!".format(sensordescription=s.description,
-                                                                                         unit=units.get(s.type))
-        )
+                             come back tomorrow to this graph to see the effect!".format(
+                    sensordescription=s.description,
+                    unit=units.get(s.type))
+            )
         )
         # create standby vertical
         filename = 'standby_vertical_{}.png'.format(s.key)
@@ -128,8 +136,9 @@ def sensor(sensorid):
                              This may give you an idea of what's going on in the night. Try to switch something off tonight and\
                              come back tomorrow to this graph to see the effect!<br><br>\
                              Which of these two graphs do you prefer? Let us know in the\
-                             <a href=\"https://groups.google.com/d/forum/opengrid-private\">forum</a>.".format(sensordescription=s.description,
-                                                                                                              unit=units.get(s.type))
+                             <a href=\"https://groups.google.com/d/forum/opengrid-private\">forum</a>.".format(
+                    sensordescription=s.description,
+                    unit=units.get(s.type))
             )
         )
 
@@ -147,10 +156,10 @@ def sensor(sensorid):
                          This allows to check if systems are correctly scheduled (night set-back for heating, clock for\
                          an electrical boiler, etc. )<br><br>\
                          Do you think this is useful? Let us know in the\
-                         <a href=\"https://groups.google.com/d/forum/opengrid-private\">forum</a>.".format(sensordescription=s.description)
+                         <a href=\"https://groups.google.com/d/forum/opengrid-private\">forum</a>.".format(
+                sensordescription=s.description)
         )
     )
-
 
     analyses = [analysis for analysis in analyses if analysis.has_content()]
 
@@ -187,8 +196,8 @@ def search():
             flash("Sorry, we couldn't find that Fluksometer")
 
     return render_template(
-            "search.html",
-            form=form)
+        "search.html",
+        form=form)
 
 
 @app.route("/download", methods=['GET', 'POST'])
@@ -205,48 +214,39 @@ def download(guid=None):
             flash("ID not found")
         else:
             try:
-                # We need to connect and disconnect with tmpo
-                # to make sure the website doesn't lock access to the sqlite
-                hp.init_tmpo()
-                tmpos = hp.get_tmpos()
                 output = StringIO()
                 df = s.get_data(
-                        head=pd.Timestamp(form.start.data),
-                        tail=pd.Timestamp(form.end.data),
-                        resample=form.resample.data
+                    head=pd.Timestamp(form.start.data),
+                    tail=pd.Timestamp(form.end.data),
+                    resample=form.resample.data
                 )
-                tmpos.dbcon.close()
             except:
-                # This will happen if another process is currently using the tmpo
                 flash("Error connecting to the data storage, please try again later")
             else:
                 df.to_csv(output, encoding='utf-8')
                 output.seek(0)
                 return send_file(
-                        output,
-                        mimetype="text/csv",
-                        as_attachment=True,
-                        attachment_filename='{}.csv'.format(s.key)
+                    output,
+                    mimetype="text/csv",
+                    as_attachment=True,
+                    attachment_filename='{}.csv'.format(s.key)
                 )
     if guid is not None:
         form.guid.data = guid
 
     return render_template(
-            'download.html',
-            form=form
+        'download.html',
+        form=form
     )
 
 
 @app.route("/issue30", methods=['GET', 'POST'])
 def issue30():
-    form = EmptyForm() # Empty form, only validates the secret token to protect against cross-site scripting
+    form = EmptyForm()  # Empty form, only validates the secret token to protect against cross-site scripting
 
     if request.method == 'POST' and form.validate():
         try:
-            hp.init_tmpo()
-            tmpos = hp.get_tmpos()
             hp.sync_tmpos()
-            tmpos.dbcon.close()
         except:
             flash("Error syncing TMPO, please try again later")
         else:
