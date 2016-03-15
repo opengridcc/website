@@ -8,6 +8,8 @@
         energy savings, build smart automation applications, enable demand response, ...</p>
         <p><a class="btn btn-primary btn-lg" href="{{ url_for('development') }}" role="button">Subscribe to the project</a></p>
     </div>
+    <br/>
+
     <div class="jumbotron">
         <h1>OpenGrid double event!!</h1>
         <p>
@@ -16,20 +18,21 @@
         </p>
         <p><a class="btn btn-primary btn-lg" href="{{ url_for('development') }}" role="button">Subscribe to grid:camp or opengrid café</a></p>.
     </div>
-    <table style="width:100%">
-      <tr>
-        <td><h1>grid:camp</h1></td>
-        <td><h1>openrid café</h1></td>
-      </tr>
-      <tr>
-        <td>Meetup for hackers, barcamp style.  Anyone with a passion for building monitoring, home automation,
-            electronics, data analysis, energy savings etc... can join.   </td>
-        <td>Uitleg2</td>
-      </tr>
-      <tr>
-        <td><img src="{{url_for('static', filename='images/grid.camp.2016.04.draft.jpg')}}" /></td>
-        <td><img src="{{url_for('static', filename='images/grid.camp.2016.04.draft.jpg')}}" /></td>
-      </tr>
 
-    </table>
+    <div class="left">
+        <h1>grid:camp</h1>
+        <p>
+            Meetup for hackers, barcamp style.  Anyone with a passion for building monitoring, home automation,
+            electronics, data analysis, energy savings etc... can join.
+        </p>
+        <img src="{{url_for('static', filename='images/grid.camp.2016.04.draft.jpg')}}" />
+    </div>
+    <div class="right">
+        <h1>OpenGrid Café</h1>
+        <p>
+            Meetup for hackers, barcamp style.  Anyone with a passion for building monitoring, home automation,
+            electronics, data analysis, energy savings etc... can join.
+        </p>
+        <img src="{{url_for('static', filename='images/grid.camp.2016.04.draft.jpg')}}" />
+    </div>
 {% endblock %}
