@@ -27,8 +27,13 @@ app.config.from_object(__name__)
 try:
     hp = houseprint.Houseprint()
 except:
-    print("Connection failed, loading houseprint from cache")
-    hp = houseprint.load_houseprint_from_file("cache_hp.hp")
+    try:
+        hp = houseprint.Houseprint(gjson=c.get('houseprint','json'))
+    except:
+        print("Connection failed, loading houseprint from cache")
+        hp = houseprint.load_houseprint_from_file("cache_hp.hp")
+    else:
+        hp.save("cache_hp.hp")
 else:
     hp.save("cache_hp.hp")
 
