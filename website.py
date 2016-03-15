@@ -37,7 +37,10 @@ except:
 else:
     hp.save("cache_hp.hp")
 
-hp.init_tmpo()
+try:
+    hp.init_tmpo(path_to_tmpo_data=c.get('tmpo','data'))
+except:
+    hp.init_tmpo()
 
 
 @app.route("/")
