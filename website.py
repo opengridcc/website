@@ -57,6 +57,11 @@ def data():
 def development():
     return render_template('development.html')
 
+@app.route("/events")
+def events():
+    return render_template('events.html')
+
+
 
 @app.route("/flukso/<fluksoid>")
 def flukso(fluksoid):
