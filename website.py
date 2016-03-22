@@ -3,14 +3,9 @@ import sys
 import os
 import pandas as pd
 import config
-from flask import Flask, render_template, send_file, flash, redirect, url_for, safe_join, request, abort, g
+from flask import Flask, render_template, send_file, flash, redirect, url_for, safe_join, request, abort
 from forms import SearchForm, DownloadForm, EmptyForm
 import plot
-
-if sys.version_info.major >= 3:
-    from io import StringIO
-else:
-    from cStringIO import StringIO
 
 c = config.Config()
 
@@ -20,10 +15,13 @@ except ImportError:
     sys.path.append(c.get('backend', 'opengrid'))
     from opengrid.library import houseprint
 
+if not os.path.exists("static/downloads"):
+    os.mkdir("static/downloads")
+
 app = Flask(__name__)
 SECRET_KEY = "secret_key"  # TODO add a real key in the config file
 app.config.from_object(__name__)
-app.use_x_sendfile
+#app.use_x_sendfile = True
 
 try:
     hp = houseprint.Houseprint()
@@ -34,20 +32,6 @@ else:
     hp.save("cache_hp.hp")
 
 hp.init_tmpo()
-
-
-def after_this_request(func):
-    if not hasattr(g, 'call_after_request'):
-        g.call_after_request = []
-    g.call_after_request.append(func)
-    return func
-
-
-@app.after_request
-def per_request_callbacks(response):
-    for func in getattr(g, 'call_after_request', ()):
-        response = func(response)
-    return response
 
 
 @app.route("/")
@@ -223,12 +207,7 @@ def download(guid=None):
         if s is None:
             flash("ID not found")
         else:
-            @after_this_request
-            def cleanup(response):
-                output.close()
-                return response
             try:
-                output = StringIO()
                 df = s.get_data(
                     head=pd.Timestamp(form.start.data),
                     tail=pd.Timestamp(form.end.data),
@@ -237,13 +216,12 @@ def download(guid=None):
             except:
                 flash("Error connecting to the data storage, please try again later")
             else:
-                df.to_csv(output, encoding='utf-8')
-                output.seek(0)
+                filename = '{}.csv'.format(s.key)
+                filepath = safe_join("static/downloads", filename)
+                df.to_csv(filepath, encoding='utf-8')
                 return send_file(
-                    output,
-                    mimetype="text/csv",
-                    as_attachment=True,
-                    attachment_filename='{}.csv'.format(s.key)
+                    filepath,
+                    as_attachment=True
                 )
 
     if guid is not None:
