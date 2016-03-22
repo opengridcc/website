@@ -20,6 +20,9 @@ except ImportError:
     sys.path.append(c.get('backend', 'opengrid'))
     from opengrid.library import houseprint
 
+if not os.path.exists("static/sandbox"):
+    os.mkdir("static/sandbox")
+
 app = Flask(__name__)
 SECRET_KEY = "secret_key"  # TODO add a real key in the config file
 app.config.from_object(__name__)
@@ -63,7 +66,7 @@ def development():
     return render_template('development.html')
 
 @app.route("/sandbox")
-@app.route("/sandbox/<filename>")
+@app.route("/static/sandbox/<filename>")
 def manualresults(filename=None):
     if filename is None:
         path = c.get('backend', 'sandbox')
