@@ -10,7 +10,7 @@ import plot
 if sys.version_info.major >= 3:
     from io import StringIO
 else:
-    from StringIO import StringIO
+    from cStringIO import StringIO
 
 c = config.Config()
 
@@ -231,6 +231,7 @@ def download(guid=None):
                     as_attachment=True,
                     attachment_filename='{}.csv'.format(s.key)
                 )
+
     if guid is not None:
         form.guid.data = guid
 
