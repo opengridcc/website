@@ -27,22 +27,12 @@ app.config.from_object(__name__)
 try:
     hp = houseprint.Houseprint()
 except:
-    try:
-        hp = houseprint.Houseprint(gjson=c.get('houseprint','json'))
-    except:
-        print("Connection failed, loading houseprint from cache")
-        hp = houseprint.load_houseprint_from_file("cache_hp.hp")
-    else:
-        hp.save("cache_hp.hp")
+    print("Connection failed, loading houseprint from cache")
+    hp = houseprint.load_houseprint_from_file("cache_hp.hp")
 else:
     hp.save("cache_hp.hp")
 
-"""
-try:
-    hp.init_tmpo(path_to_tmpo_data=c.get('tmpo','data'))
-except:
-    hp.init_tmpo()
-"""
+hp.init_tmpo()
 
 
 @app.route("/")
