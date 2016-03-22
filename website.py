@@ -3,7 +3,7 @@ import sys
 import os
 import pandas as pd
 import config
-from flask import Flask, render_template, send_file, flash, redirect, url_for, safe_join, request, abort
+from flask import Flask, render_template, send_file, flash, redirect, url_for, safe_join, request, abort, g
 from forms import SearchForm, DownloadForm, EmptyForm
 import plot
 
@@ -23,6 +23,7 @@ except ImportError:
 app = Flask(__name__)
 SECRET_KEY = "secret_key"  # TODO add a real key in the config file
 app.config.from_object(__name__)
+app.use_x_sendfile
 
 try:
     hp = houseprint.Houseprint()
@@ -33,6 +34,20 @@ else:
     hp.save("cache_hp.hp")
 
 hp.init_tmpo()
+
+
+def after_this_request(func):
+    if not hasattr(g, 'call_after_request'):
+        g.call_after_request = []
+    g.call_after_request.append(func)
+    return func
+
+
+@app.after_request
+def per_request_callbacks(response):
+    for func in getattr(g, 'call_after_request', ()):
+        response = func(response)
+    return response
 
 
 @app.route("/")
@@ -208,6 +223,10 @@ def download(guid=None):
         if s is None:
             flash("ID not found")
         else:
+            @after_this_request
+            def cleanup(response):
+                output.close()
+                return response
             try:
                 output = StringIO()
                 df = s.get_data(
