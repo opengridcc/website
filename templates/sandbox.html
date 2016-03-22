@@ -1,0 +1,18 @@
+{% extends "master.html" %}
+{% block content %}
+    <h3>Sandbox</h3>
+    <table class="table table-hover table-smallertext"">
+        <tr>
+            <th>Notebook</th>
+            <th>Last modified</th>
+            <th>Filesize</th>
+        </tr>
+        {% for file in files %}
+            <tr>
+                <td><a href="/sandbox/{{ file.title }}" target="_blank">{{ file.title }}</a></td>
+                <td>{{ file.date_modified }}</td>
+                <td>{{ file.filesize }} KB</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

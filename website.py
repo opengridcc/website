@@ -62,6 +62,18 @@ def data():
 def development():
     return render_template('development.html')
 
+@app.route("/sandbox")
+@app.route("/sandbox/<filename>")
+def manualresults(filename=None):
+    if filename is None:
+        path = c.get('backend', 'sandbox')
+        resultfiles = os.listdir(path)
+        notebooks = [plot.Notebook(title=resultfile, path=path) for resultfile in resultfiles]
+        return render_template('sandbox.html', files=notebooks)
+    else:
+        path = c.get('backend', 'sandbox')
+        file_path = safe_join(path, filename)
+        return send_file(file_path)
 
 @app.route("/flukso/<fluksoid>")
 def flukso(fluksoid):
