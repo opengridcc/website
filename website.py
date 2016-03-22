@@ -6,6 +6,7 @@ import config
 from flask import Flask, render_template, send_file, flash, redirect, url_for, safe_join, request, abort
 from forms import SearchForm, DownloadForm, EmptyForm
 import plot
+import gc
 
 c = config.Config()
 
@@ -21,7 +22,6 @@ if not os.path.exists("static/downloads"):
 app = Flask(__name__)
 SECRET_KEY = "secret_key"  # TODO add a real key in the config file
 app.config.from_object(__name__)
-#app.use_x_sendfile = True
 
 try:
     hp = houseprint.Houseprint()
@@ -224,6 +224,8 @@ def download(guid=None):
                 filename = '{}.csv'.format(s.key)
                 filepath = safe_join("static/downloads", filename)
                 df.to_csv(filepath, encoding='utf-8')
+                del df
+                gc.collect()
                 return send_file(
                     filepath,
                     as_attachment=True
