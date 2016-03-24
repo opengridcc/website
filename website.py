@@ -319,10 +319,10 @@ def download(guid=None):
     )
 
 
-@app.route("/issue30", methods=['GET', 'POST'])
+@app.route("/admin", methods=['GET', 'POST'])
 @login_required
 @contributor_required
-def issue30():
+def admin():
     form = EmptyForm()  # Empty form, only validates the secret token to protect against cross-site scripting
 
     if request.method == 'POST' and form.validate():
@@ -338,7 +338,7 @@ def issue30():
             flash("Houseprint Reset Successful")
 
     return render_template(
-        'issue30.html',
+        'admin.html',
         form=form
     )
 
