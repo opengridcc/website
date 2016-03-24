@@ -8,6 +8,7 @@ from forms import SearchForm, DownloadForm, EmptyForm
 import plot
 import gc
 from flask_dance.contrib.github import make_github_blueprint, github
+from functools import wraps
 
 c = config.Config()
 
@@ -43,6 +44,15 @@ else:
 hp.init_tmpo()
 
 
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not github.authorized:
+            abort(401)
+        return f(*args, **kwargs)
+    return decorated_function
+
+
 @app.route("/")
 @app.route("/index")
 def index():
@@ -74,6 +84,7 @@ def development():
 
 @app.route("/sandbox/")
 @app.route("/sandbox/<filename>")
+@login_required
 def manualresults(filename=None):
     #  path = c.get('backend', 'sandbox')
     path = "static/sandbox"
@@ -270,6 +281,7 @@ def download(guid=None):
 
 
 @app.route("/issue30", methods=['GET', 'POST'])
+@login_required
 def issue30():
     form = EmptyForm()  # Empty form, only validates the secret token to protect against cross-site scripting
 
@@ -289,6 +301,12 @@ def issue30():
         'issue30.html',
         form=form
     )
+
+
+@app.errorhandler(401)
+def internal_error(error):
+    flash('ERROR 401 - Not Authorized')
+    return redirect(url_for('index'))
 
 
 @app.errorhandler(404)
