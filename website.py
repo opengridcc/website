@@ -58,7 +58,7 @@ def development():
 @app.route("/sandbox/upload", methods=['POST'])
 @app.route("/sandbox/<filename>")
 def manualresults(filename=None):
-    #path = c.get('backend', 'sandbox')
+    #  path = c.get('backend', 'sandbox')
     path = "static/sandbox"
     if filename is None:
         resultfiles = os.listdir(path)
