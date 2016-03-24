@@ -1,7 +1,17 @@
 {% extends "master.html" %}
 {% block content %}
-    <h2>Welcome</h2>
-        <p class="well">Welcome to the opengrid website. Please use the upper menu bar to navigate.</p>
+    <div class="jumbotron">
+        <h1>Welcome to Opengrid!</h1>
+        <p>Opengrid is a collaborative project about energy and building data mining and automation. We believe
+        there is a need for open source tools to analyse utility data, smart meter output, comfort measurements etc and to
+        gain knowledge from these data streams. This knowledge can then be used to understand consumption patterns, realize
+        energy savings, build smart automation applications, enable demand response, ...</p>
+        <p><a class="btn btn-primary btn-lg" href="{{ url_for('development') }}" role="button">Subscribe to the project</a></p>
+    </div>
+    <!--
     <h2>About</h2>
-        <p class="well">Opengrid is a collaborative project about energy and building data mining and automation. We believe there is a need for open source tools to analyse utility data, smart meter output, comfort measurements etc and to gain knowledge from these data streams. This knowledge can then be used to understand consumption patterns, realize energy savings, build smart automation applications, enable demand response, ...</p>
+    <p class="well">Opengrid is a collaborative project about energy and building data mining and automation. We believe
+        there is a need for open source tools to analyse utility data, smart meter output, comfort measurements etc and to
+        gain knowledge from these data streams. This knowledge can then be used to understand consumption patterns, realize
+        energy savings, build smart automation applications, enable demand response, ...</p>-->
 {% endblock %}

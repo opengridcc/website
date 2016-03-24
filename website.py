@@ -4,17 +4,22 @@ import os
 import pandas as pd
 import config
 from flask import Flask, render_template, send_file, flash, redirect, url_for, safe_join, request, abort
-from forms import SearchForm, DownloadForm
-
-if sys.version_info.major >= 3:
-    from io import StringIO
-else:
-    from StringIO import StringIO
+from forms import SearchForm, DownloadForm, EmptyForm
+import plot
+import gc
 
 c = config.Config()
 
-sys.path.append(c.get('backend', 'opengrid'))
-from opengrid.library import houseprint
+try:
+    from opengrid.library import houseprint
+except ImportError:
+    sys.path.append(c.get('backend', 'opengrid'))
+    from opengrid.library import houseprint
+
+if not os.path.exists("static/sandbox"):
+    os.mkdir("static/sandbox")
+if not os.path.exists("static/downloads"):
+    os.mkdir("static/downloads")
 
 app = Flask(__name__)
 SECRET_KEY = "secret_key"  # TODO add a real key in the config file
@@ -28,6 +33,8 @@ except:
 else:
     hp.save("cache_hp.hp")
 
+hp.init_tmpo()
+
 
 @app.route("/")
 @app.route("/index")
@@ -37,7 +44,9 @@ def index():
 
 @app.route("/data")
 def data():
-    return render_template('data.html', fluksos=hp.get_devices())
+    devices = hp.get_devices()
+    devices.sort(key=lambda x: x.key)
+    return render_template('data.html', fluksos=devices)
 
 
 @app.route("/development")
@@ -45,9 +54,18 @@ def development():
     return render_template('development.html')
 
 
-@app.route("/subscribe")
-def subscribe():
-    return render_template('subscribe.html')
+@app.route("/sandbox/")
+@app.route("/sandbox/<filename>")
+def manualresults(filename=None):
+    #  path = c.get('backend', 'sandbox')
+    path = "static/sandbox"
+    if filename is None:
+        resultfiles = os.listdir(path)
+        notebooks = [plot.Notebook(title=resultfile, path=path) for resultfile in resultfiles]
+        return render_template('sandbox.html', files=notebooks)
+    else:
+        file_path = safe_join(path, filename)
+        return send_file(file_path)
 
 
 @app.route("/flukso/<fluksoid>")
@@ -57,10 +75,13 @@ def flukso(fluksoid):
     if f is None:
         abort(404)
 
+    sensors = f.get_sensors()
+    sensors.sort(key=lambda x: x.type)
+
     return render_template(
-            'flukso.html',
-            flukso=f,
-            sensors=f.get_sensors()
+        'flukso.html',
+        flukso=f,
+        sensors=sensors
     )
 
 
@@ -71,73 +92,91 @@ def sensor(sensorid):
     if s is None:
         abort(404)
 
-    analyses = ['timeseries']
-    if s.type == 'electricity' and not s.system == 'solar':
-        analyses.append('standby_horizontal')
-        analyses.append('standby_vertical')
-
-    return render_template(
-            'sensor.html',
-            sensor=s,
-            analyses=analyses
-    )
-
-
-@app.route("/standby_horizontal/<sensorid>")
-def standby_horizontal(sensorid):
-    s = hp.find_sensor(sensorid)
-
-    filename = 'standby_horizontal_' + sensorid + '.png'
-
-    if not figure_exists(filename):
-        flash('No standby_horizontal graph found for this sensor')
-        return redirect(url_for('sensor', sensorid=sensorid))
-
-    return render_template(
-            'analysis_image.html',
-            analysisname='Standby Horizontal',
-            filename=filename,
-            sensor=s
-    )
-
-
-@app.route("/standby_vertical/<sensorid>")
-def standby_vertical(sensorid):
-    s = hp.find_sensor(sensorid)
-
-    filename = 'standby_vertical_{}.png'.format(s.key)
-
-    if not figure_exists(filename):
-        flash('No standby_vertical graph found for this sensor')
-        return redirect(url_for('sensor', sensorid=sensorid))
-
-    return render_template(
-            'analysis_image.html',
-            analysisname='Standby Vertical',
-            filename=filename,
-            sensor=s)
-
-
-@app.route("/timeseries/<sensorid>")
-def timeseries(sensorid):
-    s = hp.find_sensor(sensorid)
-
     path = c.get('backend', 'figures')
+
+    analyses = []
+    units = dict(electricity="Watt",
+                 gas="Watt",
+                 water="liter/min")
+
+    # create timeseries plot
     filename = 'TimeSeries_{}.html'.format(s.key)
-    file_path = safe_join(path, filename)
+    analyses.append(
+        plot.Html(
+            title='Timeseries',
+            content=safe_join(path, filename),
+            description=u"This interactive graph  shows the measurement of {sensordescription} over the last 7 days.\
+                                 The unit of the data is {unit}, and the graph contains minute values.\
+                                 The graph is interactive: use the bottom ruler to zoom in/out and to change the period. \
+                                 The graph is in local time (for Belgium).".format(sensordescription=s.description,
+                                                                                   unit=units.get(s.type))
+        )
+    )
 
-    if not os.path.exists(file_path):
-        flash('No timeseries graph found for this sensor')
-        return redirect(url_for('sensor', sensorid=sensorid))
+    if s.type == 'electricity' and not s.system == 'solar':
+        # create standby horizontal
+        filename = 'standby_horizontal_{}.png'.format(s.key)
+        analyses.append(
+            plot.Figure(
+                title='Standby 10 days',
+                content=filename,
+                description=u"This figure shows the electric standby power of {sensordescription} (in {unit}). \
+                             The left plot shows your standby power over the last 10 days (red diamonds). The distribution\
+                             of the standby power of other opengrid families is shown as a boxplot. The red line is the median,\
+                             the box limits are the 25th and 75th percentiles. By comparing your standby power to this box,\
+                             you get an idea of your position in the opengrid community.\
+                             The right plot shows your measured power consumption of {sensordescription} for the last night.\
+                             This may give you an idea of what's going on in the night. Try to switch something off tonight and\
+                             come back tomorrow to this graph to see the effect!".format(
+                    sensordescription=s.description,
+                    unit=units.get(s.type))
+            )
+        )
+        # create standby vertical
+        filename = 'standby_vertical_{}.png'.format(s.key)
+        analyses.append(
+            plot.Figure(
+                title='Standby 40 days',
+                content=filename,
+                description=u"This figure also shows the electric standby power of {sensordescription} (in {unit}). \
+                             The left plot shows your standby power over the last 40 days (red diamonds).\
+                             The standby power of other opengrid families is indicated by the 10th, 50th and 90th percentile.\
+                             Again, this allows you to get an idea of your standby power in comparison to the opengrid community.\
+                             The right plot shows your measured power consumption of {sensordescription} for the last night.\
+                             This may give you an idea of what's going on in the night. Try to switch something off tonight and\
+                             come back tomorrow to this graph to see the effect!<br><br>\
+                             Which of these two graphs do you prefer? Let us know in the\
+                             <a href=\"https://groups.google.com/d/forum/opengrid-private\">forum</a>.".format(
+                    sensordescription=s.description,
+                    unit=units.get(s.type))
+            )
+        )
 
-    with open(file_path, "r") as html_graph:
-        content = html_graph.read()
+    # create carpet plot
+    filename = 'carpet_{}_{}.png'.format(s.type, s.key)
+    analyses.append(
+        plot.Figure(
+            title='Carpet plot',
+            content=filename,
+            description=u"This plot shows the measurement of {sensordescription} over the last 3 weeks in a 'raster'. \
+                         Each day is a single row in the 'raster', the horizontal axis is time (0-24h).\
+                         The intensity of the measurement is plotted as a color: blue is low, red is high.  <br><br> \
+                         The plot shows when the consumption typically takes place. \
+                         This is useful discover trends or patterns over a day or week.\
+                         This allows to check if systems are correctly scheduled (night set-back for heating, clock for\
+                         an electrical boiler, etc. )<br><br>\
+                         Do you think this is useful? Let us know in the\
+                         <a href=\"https://groups.google.com/d/forum/opengrid-private\">forum</a>.".format(
+                sensordescription=s.description)
+        )
+    )
+
+    analyses = [analysis for analysis in analyses if analysis.has_content()]
 
     return render_template(
-            'analysis_html.html',
-            analysisname='Time Series',
-            sensor=s,
-            content=content
+        'sensor.html',
+        sensor=s,
+        analyses=analyses
     )
 
 
@@ -167,8 +206,8 @@ def search():
             flash("Sorry, we couldn't find that Fluksometer")
 
     return render_template(
-            "search.html",
-            form=form)
+        "search.html",
+        form=form)
 
 
 @app.route("/download", methods=['GET', 'POST'])
@@ -185,35 +224,52 @@ def download(guid=None):
             flash("ID not found")
         else:
             try:
-                # We need to connect and disconnect with tmpo
-                # to make sure the website doesn't lock access to the sqlite
-                hp.init_tmpo()
-                tmpos = hp.get_tmpos()
-                output = StringIO()
                 df = s.get_data(
-                        head=pd.Timestamp(form.start.data),
-                        tail=pd.Timestamp(form.end.data),
-                        resample=form.resample.data
+                    head=pd.Timestamp(form.start.data),
+                    tail=pd.Timestamp(form.end.data),
+                    resample=form.resample.data
                 )
-                tmpos.dbcon.close()
             except:
-                # This will happen if another process is currently using the tmpo
                 flash("Error connecting to the data storage, please try again later")
             else:
-                df.to_csv(output, encoding='utf-8')
-                output.seek(0)
+                filename = '{}.csv'.format(s.key)
+                filepath = safe_join("static/downloads", filename)
+                df.to_csv(filepath, encoding='utf-8')
+                del df
+                gc.collect()
                 return send_file(
-                        output,
-                        mimetype="text/csv",
-                        as_attachment=True,
-                        attachment_filename='{}.csv'.format(s.key)
+                    filepath,
+                    as_attachment=True
                 )
+
     if guid is not None:
         form.guid.data = guid
 
     return render_template(
-            'download.html',
-            form=form
+        'download.html',
+        form=form
+    )
+
+
+@app.route("/issue30", methods=['GET', 'POST'])
+def issue30():
+    form = EmptyForm()  # Empty form, only validates the secret token to protect against cross-site scripting
+
+    if request.method == 'POST' and form.validate():
+        if request.form['submit'] == 'Sync TMPO':
+            try:
+                hp.sync_tmpos()
+            except:
+                flash("Error syncing TMPO, please try again later")
+            else:
+                flash("TMPO Sync Successful")
+        elif request.form['submit'] == 'Reset Houseprint':
+            hp.reset()
+            flash("Houseprint Reset Successful")
+
+    return render_template(
+        'issue30.html',
+        form=form
     )
 
 

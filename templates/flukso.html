@@ -14,14 +14,14 @@
             <th>Sensor Description</th>
             <th>Type</th>
             <th>ID</th>
-            <th>CSV data</th>
+            <!-- <th>CSV data</th> -->
         </tr>
         {% for sensor in sensors %}
             <tr>
                 <td><a href="/sensor/{{ sensor.key }}">{{ sensor.description }}</a></td>
                 <td>{{ sensor.type }}</td>
                 <td>{{ sensor.key }}</td>
-                <td><a href="{{ url_for('download', guid=sensor.key) }}">download</a></td>
+                <!-- <td><a href="{{ url_for('download', guid=sensor.key) }}">download</a></td> -->
             </tr>
         {% endfor %}
     </table>
