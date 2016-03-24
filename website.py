@@ -7,6 +7,7 @@ from flask import Flask, render_template, send_file, flash, redirect, url_for, s
 from forms import SearchForm, DownloadForm, EmptyForm
 import plot
 import gc
+from werkzeug import secure_filename
 
 c = config.Config()
 
@@ -54,19 +55,40 @@ def development():
     return render_template('development.html')
 
 
-@app.route("/sandbox")
-@app.route("/sandbox/upload", methods=['POST'])
+@app.route("/sandbox/", methods=['GET', 'POST'])
 @app.route("/sandbox/<filename>")
-def manualresults(filename=None):
-    #  path = c.get('backend', 'sandbox')
+def sandbox(filename=None):
     path = "static/sandbox"
-    if filename is None:
-        resultfiles = os.listdir(path)
-        notebooks = [plot.Notebook(title=resultfile, path=path) for resultfile in resultfiles]
-        return render_template('sandbox.html', files=notebooks)
-    else:
+
+    #  Upload file
+    if request.method == 'POST':
+        file = request.files['file']
+        if get_extension(file.filename) not in {'jpg', 'jpeg', 'gif', 'png', 'pdf', 'html'}:
+            flash('File type not allowed, only images, pdf\'s or html')
+            abort(415)  # unsupported media type
+        else:
+            file_name = secure_filename(file.filename)
+            file_path = os.path.join(path, file_name)
+            file.save(file_path)
+            flash('Upload successful')
+
+    #  Request of specific file
+    if request.method == 'GET' and filename is not None:
         file_path = safe_join(path, filename)
         return send_file(file_path)
+
+    #  Normal behaviour
+    resultfiles = os.listdir(path)
+    notebooks = [plot.Notebook(title=resultfile, path=path) for resultfile in resultfiles]
+
+    return render_template(
+        'sandbox.html',
+        files=notebooks
+    )
+
+
+def get_extension(filename):
+    return filename.rsplit('.',1)[1].lower()
 
 
 @app.route("/flukso/<fluksoid>")
@@ -277,6 +299,18 @@ def issue30():
 @app.errorhandler(404)
 def internal_error(error):
     flash('ERROR 404 - Page not found')
+    return redirect(url_for('index'))
+
+
+@app.errorhandler(415)
+def internal_error(error):
+    flash('ERROR 415 - Unsupported media type')
+    return redirect(url_for('index'))
+
+
+@app.errorhandler(500)
+def internal_error(error):
+    flash('ERROR 500 - Server Error')
     return redirect(url_for('index'))
 
 

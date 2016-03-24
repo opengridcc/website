@@ -15,4 +15,13 @@
             </tr>
         {% endfor %}
     </table>
+    <div class="well">
+        <form action="/sandbox/" method="post" enctype="multipart/form-data">
+            <h4>Upload File</h4>
+            <p>
+               <input type="file" name="file">
+            </p>
+            <p><input class="btn btn-primary" type="submit" value="Upload"></p>
+        </form>
+    </div>
 {% endblock %}
