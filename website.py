@@ -89,7 +89,12 @@ def sandbox(filename=None):
 
 
 def get_extension(filename):
-    return filename.rsplit('.',1)[1].lower()
+    try:
+        extension = filename.rsplit('.',1)[1].lower()
+    except IndexError:
+        extension = None
+
+    return extension
 
 
 @app.route("/flukso/<fluksoid>")
