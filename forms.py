@@ -1,5 +1,5 @@
 from flask_wtf import Form
-from wtforms import StringField, SelectField, FileField
+from wtforms import StringField, SelectField
 from wtforms.validators import DataRequired
 from wtforms.fields.html5 import DateField
 import datetime as dt
@@ -18,7 +18,3 @@ class DownloadForm(Form):
 
 class EmptyForm(Form):
     pass
-
-
-class UploadForm(Form):
-    file_name = FileField()
