@@ -53,6 +53,16 @@ def login_required(f):
     return decorated_function
 
 
+def contributor_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'contributor' not in session or session['contributor'] == False:
+            flash('You need to be a contributor to the OpenGrid project to view this page!')
+            abort(403)
+        return f(*args, **kwargs)
+    return decorated_function
+
+
 @app.route("/")
 @app.route("/index")
 def index():
@@ -63,10 +73,14 @@ def index():
 def login():
     if not github.authorized:
         return redirect(url_for("github.login"))
-    resp = github.get("/user")
-    username = resp.json()["login"]
-    session['username'] = username
-    flash("Welcome, {user}".format(user=username))
+
+    user = github.get("/user").json()
+    repos = github.get(user['repos_url']).json()
+
+    # if you have opengrid in your repositories, you are a contributor :-)
+    session['contributor'] = 'opengrid' in {repo['name'] for repo in repos}
+    session['username'] = user["login"]
+
     return redirect(url_for('index'))
 
 
@@ -282,6 +296,7 @@ def download(guid=None):
 
 @app.route("/issue30", methods=['GET', 'POST'])
 @login_required
+@contributor_required
 def issue30():
     form = EmptyForm()  # Empty form, only validates the secret token to protect against cross-site scripting
 
@@ -306,6 +321,12 @@ def issue30():
 @app.errorhandler(401)
 def internal_error(error):
     flash('ERROR 401 - Not Authorized')
+    return redirect(url_for('index'))
+
+
+@app.errorhandler(403)
+def internal_error(error):
+    flash('ERROR 403 - Forbidden')
     return redirect(url_for('index'))
 
 
