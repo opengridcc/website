@@ -240,12 +240,16 @@ def issue30():
     form = EmptyForm()  # Empty form, only validates the secret token to protect against cross-site scripting
 
     if request.method == 'POST' and form.validate():
-        try:
-            hp.sync_tmpos()
-        except:
-            flash("Error syncing TMPO, please try again later")
-        else:
-            flash("TMPO Sync Successful")
+        if request.form['submit'] == 'Sync TMPO':
+            try:
+                hp.sync_tmpos()
+            except:
+                flash("Error syncing TMPO, please try again later")
+            else:
+                flash("TMPO Sync Successful")
+        elif request.form['submit'] == 'Reset Houseprint':
+            hp.reset()
+            flash("Houseprint Reset Successful")
 
     return render_template(
         'issue30.html',
