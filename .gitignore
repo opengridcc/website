@@ -9,3 +9,4 @@ houseprint-*.json
 *.hp
 
 static/downloads/*
+static/sandbox/*
