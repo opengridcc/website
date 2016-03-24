@@ -55,6 +55,7 @@ def development():
 
 
 @app.route("/sandbox")
+@app.route("/sandbox/upload", methods=['POST'])
 @app.route("/sandbox/<filename>")
 def manualresults(filename=None):
     #path = c.get('backend', 'sandbox')
