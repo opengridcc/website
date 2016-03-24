@@ -3,10 +3,11 @@ import sys
 import os
 import pandas as pd
 import config
-from flask import Flask, render_template, send_file, flash, redirect, url_for, safe_join, request, abort
+from flask import Flask, render_template, send_file, flash, redirect, url_for, safe_join, request, abort, session
 from forms import SearchForm, DownloadForm, EmptyForm
 import plot
 import gc
+from flask_dance.contrib.github import make_github_blueprint, github
 
 c = config.Config()
 
@@ -25,6 +26,12 @@ app = Flask(__name__)
 SECRET_KEY = "secret_key"  # TODO add a real key in the config file
 app.config.from_object(__name__)
 
+blueprint = make_github_blueprint(
+    client_id=c.get('github','clientid'),
+    client_secret=c.get('github','clientsecret'),
+)
+app.register_blueprint(blueprint, url_prefix="/login")
+
 try:
     hp = houseprint.Houseprint()
 except:
@@ -40,6 +47,17 @@ hp.init_tmpo()
 @app.route("/index")
 def index():
     return render_template('index.html')
+
+
+@app.route("/login")
+def login():
+    if not github.authorized:
+        return redirect(url_for("github.login"))
+    resp = github.get("/user")
+    username = resp.json()["login"]
+    session['username'] = username
+    flash("Welcome, {user}".format(user=username))
+    return redirect(url_for('index'))
 
 
 @app.route("/data")
@@ -286,6 +304,7 @@ if __name__ == "__main__":
         env = 'prod'
 
     if env == 'dev':
-        app.run(debug=True)
+        context = ('key.crt', 'key.key')
+        app.run(debug=True, ssl_context=context)
     else:
         app.run(debug=False, host='0.0.0.0', port=5000)
