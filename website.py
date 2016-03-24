@@ -63,9 +63,10 @@ def sandbox(filename=None):
     #  Upload file
     if request.method == 'POST':
         file = request.files['file']
-        if get_extension(file.filename) not in {'jpg', 'jpeg', 'gif', 'png', 'pdf', 'html'}:
+        if file.filename == '':
+            flash('Select a valid file to upload')
+        elif get_extension(file.filename) not in {'jpg', 'jpeg', 'gif', 'png', 'pdf', 'html'}:
             flash('File type not allowed, only images, pdf\'s or html')
-            abort(415)  # unsupported media type
         else:
             file_name = secure_filename(file.filename)
             file_path = os.path.join(path, file_name)
@@ -299,18 +300,6 @@ def issue30():
 @app.errorhandler(404)
 def internal_error(error):
     flash('ERROR 404 - Page not found')
-    return redirect(url_for('index'))
-
-
-@app.errorhandler(415)
-def internal_error(error):
-    flash('ERROR 415 - Unsupported media type')
-    return redirect(url_for('index'))
-
-
-@app.errorhandler(500)
-def internal_error(error):
-    flash('ERROR 500 - Server Error')
     return redirect(url_for('index'))
 
 
