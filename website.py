@@ -16,6 +16,8 @@ except ImportError:
     sys.path.append(c.get('backend', 'opengrid'))
     from opengrid.library import houseprint
 
+if not os.path.exists("static/sandbox"):
+    os.mkdir("static/sandbox")
 if not os.path.exists("static/downloads"):
     os.mkdir("static/downloads")
 
@@ -50,6 +52,20 @@ def data():
 @app.route("/development")
 def development():
     return render_template('development.html')
+
+
+@app.route("/sandbox")
+@app.route("/sandbox/<filename>")
+def manualresults(filename=None):
+    #path = c.get('backend', 'sandbox')
+    path = "static/sandbox"
+    if filename is None:
+        resultfiles = os.listdir(path)
+        notebooks = [plot.Notebook(title=resultfile, path=path) for resultfile in resultfiles]
+        return render_template('sandbox.html', files=notebooks)
+    else:
+        file_path = safe_join(path, filename)
+        return send_file(file_path)
 
 
 @app.route("/flukso/<fluksoid>")
