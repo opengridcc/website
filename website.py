@@ -3,7 +3,7 @@ import sys
 import os
 import pandas as pd
 import config
-from flask import Flask, render_template, send_file, flash, redirect, url_for, safe_join, request, abort, session
+from flask import Flask, render_template, send_file, flash, redirect, url_for, safe_join, request, abort, session, g
 from forms import SearchForm, DownloadForm, EmptyForm
 import plot
 import gc
@@ -47,7 +47,7 @@ hp.init_tmpo()
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not github.authorized:
+        if not user_is_authenticated():
             abort(401)
         return f(*args, **kwargs)
     return decorated_function
@@ -56,11 +56,25 @@ def login_required(f):
 def contributor_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'contributor' not in session or session['contributor'] == False:
+        if not user_is_contributor():
             flash('You need to be a contributor to the OpenGrid project to view this page!')
             abort(403)
         return f(*args, **kwargs)
     return decorated_function
+
+
+def user_is_authenticated():
+    return github.authorized and 'username' in session
+
+
+def user_is_contributor():
+    return 'contributor' in session and session['contributor'] == True
+
+
+@app.before_request
+def before_request():
+    g.user_is_authenticated = user_is_authenticated()
+    g.user_is_contributor = user_is_contributor()
 
 
 @app.route("/")
@@ -81,6 +95,17 @@ def login():
     session['contributor'] = 'opengrid' in {repo['name'] for repo in repos}
     session['username'] = user["login"]
 
+    flash('Welcome, {user}'.format(user=session['username']))
+
+    return redirect(url_for('index'))
+
+
+@app.route("/logout")
+def logout():
+    session.pop('username', None)
+    session.pop('contributor', None)
+
+    flash('Logout successful')
     return redirect(url_for('index'))
 
 
