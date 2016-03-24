@@ -54,10 +54,10 @@ def development():
     return render_template('development.html')
 
 
-@app.route("/sandbox")
+@app.route("/sandbox/")
 @app.route("/sandbox/<filename>")
 def manualresults(filename=None):
-    #path = c.get('backend', 'sandbox')
+    #  path = c.get('backend', 'sandbox')
     path = "static/sandbox"
     if filename is None:
         resultfiles = os.listdir(path)
