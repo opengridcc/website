@@ -95,7 +95,11 @@ def login():
     session['contributor'] = 'opengrid' in {repo['name'] for repo in repos}
     session['username'] = user["login"]
 
-    flash('Welcome, {user}'.format(user=session['username']))
+    if user_is_contributor():
+        flash('Welcome, {user}. Thanks for contributing to OpenGrid!'.format(user=session['username']))
+    else:
+        flash('Welcome, {user}. Become an OpenGrid contributor to view all restricted pages'.format(
+            user=session['username']))
 
     return redirect(url_for('index'))
 
