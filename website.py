@@ -143,15 +143,18 @@ def development():
     return render_template('development.html')
 
 
-@app.route("/sandbox/", methods=['GET', 'POST'])
-@app.route("/sandbox/<filename>")
+@app.route("/sandbox/")
+@app.route("/sandbox/file/<filename>")
+@app.route("/sandbox/upload", methods=['POST'])
+@app.route("/sandbox/delete", methods=['POST'])
 @login_required
+@contributor_required
 def sandbox(filename=None):
     #  path = c.get('backend', 'sandbox')
     path = "static/sandbox"
 
     #  Upload file
-    if request.method == 'POST':
+    if request.method == 'POST' and 'upload' in request.url_rule.rule:
         file = request.files['file']
         if file.filename == '':
             flash('Select a valid file to upload')
@@ -167,6 +170,13 @@ def sandbox(filename=None):
     if request.method == 'GET' and filename is not None:
         file_path = safe_join(path, filename)
         return send_file(file_path)
+
+    #  Delete file
+    if request.method == 'POST' and 'delete' in request.url_rule.rule:
+        filename = request.form['filename']
+        file_path = safe_join(path, filename)
+        os.remove(file_path)
+        flash('{filename} deleted'.format(filename=filename))
 
     #  Normal behaviour
     resultfiles = os.listdir(path)

@@ -1,22 +1,39 @@
 {% extends "master.html" %}
 {% block content %}
+    <script type="text/javascript">
+        function makesure() {
+        if (confirm('Do you really want to delete this file?')) {
+            return true;
+          }
+          else {
+            return false;
+          }
+         }
+    </script>
     <h3>Sandbox</h3>
     <table class="table table-hover table-smallertext"">
         <tr>
             <th>File Name</th>
             <th>Last modified</th>
             <th>File Size</th>
+            <th>Delete</th>
         </tr>
         {% for file in files %}
             <tr>
-                <td><a href="/sandbox/{{ file.title }}" target="_blank">{{ file.title }}</a></td>
+                <td><a href="/sandbox/file/{{ file.title }}" target="_blank">{{ file.title }}</a></td>
                 <td>{{ file.date_modified }}</td>
                 <td>{{ file.filesize }} KB</td>
+                <td>
+                    <form action="/sandbox/delete" method="post">
+                        <input hidden value="{{ file.title }}" name="filename">
+                        <input class="btn btn-danger" type="submit" value="X" onclick="return makesure();">
+                    </form>
+                </td>
             </tr>
         {% endfor %}
     </table>
     <div class="well">
-        <form action="/sandbox/" method="post" enctype="multipart/form-data">
+        <form action="/sandbox/upload" method="post" enctype="multipart/form-data">
             <h4>Upload File</h4>
             <p>
                <input type="file" name="file">
