@@ -13,6 +13,11 @@ from functools import wraps
 c = config.Config()
 
 try:
+    env = c.get('env', 'type')
+except:
+    env = 'prod'
+
+try:
     from opengrid.library import houseprint
 except ImportError:
     sys.path.append(c.get('backend', 'opengrid'))
@@ -27,11 +32,12 @@ app = Flask(__name__)
 SECRET_KEY = "secret_key"  # TODO add a real key in the config file
 app.config.from_object(__name__)
 
-blueprint = make_github_blueprint(
-    client_id=c.get('github','clientid'),
-    client_secret=c.get('github','clientsecret'),
-)
-app.register_blueprint(blueprint, url_prefix="/login")
+if env == 'prod':
+    blueprint = make_github_blueprint(
+        client_id=c.get('github','clientid'),
+        client_secret=c.get('github','clientsecret'),
+    )
+    app.register_blueprint(blueprint, url_prefix="/login")
 
 try:
     hp = houseprint.Houseprint()
@@ -64,10 +70,14 @@ def contributor_required(f):
 
 
 def user_is_authenticated():
+    if env == 'dev':
+        return True
     return github.authorized and 'username' in session
 
 
 def user_is_contributor():
+    if env == 'dev':
+        return True
     return 'contributor' in session and session['contributor'] == True
 
 
@@ -85,6 +95,10 @@ def index():
 
 @app.route("/login")
 def login():
+    if env == 'dev':
+        flash('You are in dev mode, and don\'t need to login')
+        return redirect(url_for('index'))
+
     if not github.authorized:
         return redirect(url_for("github.login"))
 
@@ -106,6 +120,9 @@ def login():
 
 @app.route("/logout")
 def logout():
+    if env == 'dev':
+        flash('You are in dev mode, no need to logout')
+        return redirect(url_for('index'))
     session.pop('username', None)
     session.pop('contributor', None)
 
@@ -366,13 +383,7 @@ def internal_error(error):
 
 
 if __name__ == "__main__":
-    try:
-        env = c.get('env', 'type')
-    except:
-        env = 'prod'
-
     if env == 'dev':
-        context = ('key.crt', 'key.key')
-        app.run(debug=True, ssl_context=context)
+        app.run(debug=True)
     else:
         app.run(debug=False, host='0.0.0.0', port=5000)
