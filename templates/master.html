@@ -42,7 +42,7 @@
                 <li><a href="{{ url_for('search') }}">Search</a></li>
                 {% if g.user_is_authenticated and g.user_is_contributor %}
                 <li><a href="{{ url_for('admin') }}">Admin</a></li>
-                <li><a href="{{ url_for('manualresults') }}">Sandbox</a></li>
+                <li><a href="{{ url_for('sandbox') }}">Sandbox</a></li>
                 {% endif %}
                 {% if not g.user_is_authenticated %}
                 <li><a href="{{ url_for('login') }}">Login</a></li>
