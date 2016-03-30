@@ -7,6 +7,7 @@ from flask import Flask, render_template, send_file, flash, redirect, url_for, s
 from forms import SearchForm, DownloadForm, EmptyForm
 import plot
 import gc
+from werkzeug import secure_filename
 from flask_dance.contrib.github import make_github_blueprint, github
 from functools import wraps
 
@@ -143,18 +144,57 @@ def development():
 
 
 @app.route("/sandbox/")
-@app.route("/sandbox/<filename>")
+@app.route("/sandbox/file/<filename>")
+@app.route("/sandbox/upload", methods=['POST'])
+@app.route("/sandbox/delete", methods=['POST'])
 @login_required
-def manualresults(filename=None):
+@contributor_required
+def sandbox(filename=None):
     #  path = c.get('backend', 'sandbox')
     path = "static/sandbox"
-    if filename is None:
-        resultfiles = os.listdir(path)
-        notebooks = [plot.Notebook(title=resultfile, path=path) for resultfile in resultfiles]
-        return render_template('sandbox.html', files=notebooks)
-    else:
+
+    #  Upload file
+    if request.method == 'POST' and 'upload' in request.url_rule.rule:
+        file = request.files['file']
+        if file.filename == '':
+            flash('Select a valid file to upload')
+        elif get_extension(file.filename) not in {'jpg', 'jpeg', 'gif', 'png', 'pdf', 'html'}:
+            flash('File type not allowed, only images, pdf\'s or html')
+        else:
+            file_name = secure_filename(file.filename)
+            file_path = os.path.join(path, file_name)
+            file.save(file_path)
+            flash('Upload successful')
+
+    #  Request of specific file
+    if request.method == 'GET' and filename is not None:
         file_path = safe_join(path, filename)
         return send_file(file_path)
+
+    #  Delete file
+    if request.method == 'POST' and 'delete' in request.url_rule.rule:
+        filename = request.form['filename']
+        file_path = safe_join(path, filename)
+        os.remove(file_path)
+        flash('{filename} deleted'.format(filename=filename))
+
+    #  Normal behaviour
+    resultfiles = os.listdir(path)
+    notebooks = [plot.Notebook(title=resultfile, path=path) for resultfile in resultfiles]
+
+    return render_template(
+        'sandbox.html',
+        files=notebooks
+    )
+
+
+def get_extension(filename):
+    try:
+        extension = filename.rsplit('.',1)[1].lower()
+    except IndexError:
+        extension = None
+
+    return extension
 
 
 @app.route("/flukso/<fluksoid>")
