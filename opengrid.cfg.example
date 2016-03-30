@@ -43,3 +43,6 @@ opengrid: /Users/Jan/opengrid
 # where figures are to be found
 figures: /Users/Jan/opengrid/data/figures
 
+[github]
+clientid: github client id
+clientsecret: github client secret
