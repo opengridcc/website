@@ -1,8 +1,9 @@
 import os
-
+import time
+from flask import safe_join
 
 class Plot(object):
-    def __init__(self, title, description, content=None):
+    def __init__(self, title, description=None, content=None):
         self.title = title
         self.description = description
         self._content = None
@@ -38,3 +39,11 @@ class Html(Plot):
         if os.path.exists(path):
             with open(path, "r") as html_graph:
                 self._content = html_graph.read()
+                
+                
+class Notebook(Plot):
+    def __init__(self, path, *args, **kwargs):
+        super(Notebook, self).__init__(*args, **kwargs)
+        file = safe_join(path, self.title)
+        self.date_modified = time.ctime(os.path.getmtime(file))
+        self.filesize = os.path.getsize(file) / 1024

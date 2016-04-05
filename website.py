@@ -3,16 +3,20 @@ import sys
 import os
 import pandas as pd
 import config
-from flask import Flask, render_template, send_file, flash, redirect, url_for, safe_join, request, abort
+from flask import Flask, render_template, send_file, flash, redirect, url_for, safe_join, request, abort, session, g
 from forms import SearchForm, DownloadForm, EmptyForm
 import plot
-
-if sys.version_info.major >= 3:
-    from io import StringIO
-else:
-    from StringIO import StringIO
+import gc
+from werkzeug import secure_filename
+from flask_dance.contrib.github import make_github_blueprint, github
+from functools import wraps
 
 c = config.Config()
+
+try:
+    env = c.get('env', 'type')
+except:
+    env = 'prod'
 
 try:
     from opengrid.library import houseprint
@@ -20,35 +24,111 @@ except ImportError:
     sys.path.append(c.get('backend', 'opengrid'))
     from opengrid.library import houseprint
 
+if not os.path.exists("static/sandbox"):
+    os.mkdir("static/sandbox")
+if not os.path.exists("static/downloads"):
+    os.mkdir("static/downloads")
+
 app = Flask(__name__)
 SECRET_KEY = "secret_key"  # TODO add a real key in the config file
 app.config.from_object(__name__)
 
+if env == 'prod':
+    blueprint = make_github_blueprint(
+        client_id=c.get('github','clientid'),
+        client_secret=c.get('github','clientsecret'),
+    )
+    app.register_blueprint(blueprint, url_prefix="/login")
+
 try:
     hp = houseprint.Houseprint()
 except:
-    try:
-        hp = houseprint.Houseprint(gjson=c.get('houseprint','json'))
-    except:
-        print("Connection failed, loading houseprint from cache")
-        hp = houseprint.load_houseprint_from_file("cache_hp.hp")
-    else:
-        hp.save("cache_hp.hp")
+    print("Connection failed, loading houseprint from cache")
+    hp = houseprint.load_houseprint_from_file("cache_hp.hp")
 else:
     hp.save("cache_hp.hp")
 
-"""
-try:
-    hp.init_tmpo(path_to_tmpo_data=c.get('tmpo','data'))
-except:
-    hp.init_tmpo()
-"""
+hp.init_tmpo()
+
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not user_is_authenticated():
+            abort(401)
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+def contributor_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not user_is_contributor():
+            flash('You need to be a contributor to the OpenGrid project to view this page!')
+            abort(403)
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+def user_is_authenticated():
+    if env == 'dev':
+        return True
+    return github.authorized and 'username' in session
+
+
+def user_is_contributor():
+    if env == 'dev':
+        return True
+    return 'contributor' in session and session['contributor'] == True
+
+
+@app.before_request
+def before_request():
+    g.user_is_authenticated = user_is_authenticated()
+    g.user_is_contributor = user_is_contributor()
 
 
 @app.route("/")
 @app.route("/index")
 def index():
     return render_template('index.html')
+
+
+@app.route("/login")
+def login():
+    if env == 'dev':
+        flash('You are in dev mode, and don\'t need to login')
+        return redirect(url_for('index'))
+
+    if not github.authorized:
+        return redirect(url_for("github.login"))
+
+    user = github.get("/user").json()
+    orgs = github.get(user['organizations_url']).json()
+
+    # if you have opengridcc in your public organizations, you are a contributor :-)
+    session['contributor'] = 'opengridcc' in {org['login'] for org in orgs}
+    session['username'] = user["login"]
+
+    if user_is_contributor():
+        flash('Welcome, {user}. Thanks for contributing to OpenGrid!'.format(user=session['username']))
+    else:
+        flash('Welcome, {user}. Become an OpenGrid contributor to view all restricted pages'.format(
+            user=session['username']))
+
+    return redirect(url_for('index'))
+
+
+@app.route("/logout")
+def logout():
+    if env == 'dev':
+        flash('You are in dev mode, no need to logout')
+        return redirect(url_for('index'))
+    session.pop('username', None)
+    session.pop('contributor', None)
+
+    flash('Logout successful')
+    return redirect(url_for('index'))
 
 
 @app.route("/data")
@@ -66,6 +146,60 @@ def development():
 def events():
     return render_template('events.html')
 
+
+
+@app.route("/sandbox/")
+@app.route("/sandbox/file/<filename>")
+@app.route("/sandbox/upload", methods=['POST'])
+@app.route("/sandbox/delete", methods=['POST'])
+@login_required
+@contributor_required
+def sandbox(filename=None):
+    #  path = c.get('backend', 'sandbox')
+    path = "static/sandbox"
+
+    #  Upload file
+    if request.method == 'POST' and 'upload' in request.url_rule.rule:
+        file = request.files['file']
+        if file.filename == '':
+            flash('Select a valid file to upload')
+        elif get_extension(file.filename) not in {'jpg', 'jpeg', 'gif', 'png', 'pdf', 'html'}:
+            flash('File type not allowed, only images, pdf\'s or html')
+        else:
+            file_name = secure_filename(file.filename)
+            file_path = os.path.join(path, file_name)
+            file.save(file_path)
+            flash('Upload successful')
+
+    #  Request of specific file
+    if request.method == 'GET' and filename is not None:
+        file_path = safe_join(path, filename)
+        return send_file(file_path)
+
+    #  Delete file
+    if request.method == 'POST' and 'delete' in request.url_rule.rule:
+        filename = request.form['filename']
+        file_path = safe_join(path, filename)
+        os.remove(file_path)
+        flash('{filename} deleted'.format(filename=filename))
+
+    #  Normal behaviour
+    resultfiles = os.listdir(path)
+    notebooks = [plot.Notebook(title=resultfile, path=path) for resultfile in resultfiles]
+
+    return render_template(
+        'sandbox.html',
+        files=notebooks
+    )
+
+
+def get_extension(filename):
+    try:
+        extension = filename.rsplit('.',1)[1].lower()
+    except IndexError:
+        extension = None
+
+    return extension
 
 
 @app.route("/flukso/<fluksoid>")
@@ -224,7 +358,6 @@ def download(guid=None):
             flash("ID not found")
         else:
             try:
-                output = StringIO()
                 df = s.get_data(
                     head=pd.Timestamp(form.start.data),
                     tail=pd.Timestamp(form.end.data),
@@ -233,14 +366,16 @@ def download(guid=None):
             except:
                 flash("Error connecting to the data storage, please try again later")
             else:
-                df.to_csv(output, encoding='utf-8')
-                output.seek(0)
+                filename = '{}.csv'.format(s.key)
+                filepath = safe_join("static/downloads", filename)
+                df.to_csv(filepath, encoding='utf-8')
+                del df
+                gc.collect()
                 return send_file(
-                    output,
-                    mimetype="text/csv",
-                    as_attachment=True,
-                    attachment_filename='{}.csv'.format(s.key)
+                    filepath,
+                    as_attachment=True
                 )
+
     if guid is not None:
         form.guid.data = guid
 
@@ -250,22 +385,40 @@ def download(guid=None):
     )
 
 
-@app.route("/issue30", methods=['GET', 'POST'])
-def issue30():
+@app.route("/admin", methods=['GET', 'POST'])
+@login_required
+@contributor_required
+def admin():
     form = EmptyForm()  # Empty form, only validates the secret token to protect against cross-site scripting
 
     if request.method == 'POST' and form.validate():
-        try:
-            hp.sync_tmpos()
-        except:
-            flash("Error syncing TMPO, please try again later")
-        else:
-            flash("TMPO Sync Successful")
+        if request.form['submit'] == 'Sync TMPO':
+            try:
+                hp.sync_tmpos()
+            except:
+                flash("Error syncing TMPO, please try again later")
+            else:
+                flash("TMPO Sync Successful")
+        elif request.form['submit'] == 'Reset Houseprint':
+            hp.reset()
+            flash("Houseprint Reset Successful")
 
     return render_template(
-        'issue30.html',
+        'admin.html',
         form=form
     )
+
+
+@app.errorhandler(401)
+def internal_error(error):
+    flash('ERROR 401 - Not Authorized')
+    return redirect(url_for('index'))
+
+
+@app.errorhandler(403)
+def internal_error(error):
+    flash('ERROR 403 - Forbidden')
+    return redirect(url_for('index'))
 
 
 @app.errorhandler(404)
@@ -275,11 +428,6 @@ def internal_error(error):
 
 
 if __name__ == "__main__":
-    try:
-        env = c.get('env', 'type')
-    except:
-        env = 'prod'
-
     if env == 'dev':
         app.run(debug=True)
     else:

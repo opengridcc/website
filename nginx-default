@@ -1,0 +1,54 @@
+server {
+	# Don't listen on port 80 here -> redirect to HTTPS later on
+	#listen 80 default_server;
+	#listen [::]:80 default_server ipv6only=on;
+	listen 443 ssl;
+	server_name opengrid.be www.opengrid.be;
+
+	ssl_certificate /etc/letsencrypt/live/opengrid.be/fullchain.pem;
+	ssl_certificate_key /etc/letsencrypt/live/opengrid.be/privkey.pem;
+
+        ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+        ssl_prefer_server_ciphers on;
+        ssl_dhparam /etc/ssl/certs/dhparam.pem;
+	ssl_ciphers "EECDH+AESGCM:EDH+AESGCM:ECDHE-RSA-AES128-GCM-SHA256:AES256+EECDH:DHE-RSA-AES128-GCM-SHA256:AES256+EDH:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES128-SHA256:DHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA:DES-CBC3-SHA:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!MD5:!PSK:!RC4";
+        ssl_session_timeout 1d;
+        ssl_session_cache shared:SSL:50m;
+        ssl_stapling on;
+        ssl_stapling_verify on;
+        add_header Strict-Transport-Security max-age=15768000;
+	
+	root /var/www/public;
+	index index.html index.htm;
+
+	location / {
+		# First attempt to serve request as file, then
+		# pass it to flask 
+		try_files $uri @opengrid-flask;
+		autoindex on;
+	}
+
+        location @opengrid-flask {
+          include uwsgi_params;
+          uwsgi_pass unix:/var/run/uwsgi/app/opengrid/socket;
+        }
+
+	# Serve /static/ from the directory of the website
+	location /static/ {
+	  root /usr/local/src/website;
+	}
+
+	# redirect server error pages to the static page /50x.html
+	error_page 500 502 503 504 /50x.html;
+	location = /50x.html {
+		root /usr/share/nginx/html;
+	}
+
+}
+
+server {
+	listen 80;
+	server_name opengrid.be www.opengrid.be;
+	return 301 https://$host$request_uri;
+}
+
