@@ -1,0 +1,14 @@
+{% extends "master.html" %}
+{% block content %}
+<h1>Admin Page</h1>
+<div class="well">
+    <form method=post action="/admin">
+        {{ form.hidden_tag() }}
+    <p><input class="btn btn-primary" type=submit value="Sync TMPO" name=submit>
+    </form>
+    <form method=post action="/admin">
+        {{ form.hidden_tag() }}
+        <input class="btn btn-primary" type=submit value="Reset Houseprint" name="submit">
+    </form>
+</div>
+{% endblock %}

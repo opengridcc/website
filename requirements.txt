@@ -4,3 +4,5 @@ python-nvd3
 flask-wtf
 pandas
 tmpo>=0.2.1
+oauth2client==1.5.2
+flask_dance

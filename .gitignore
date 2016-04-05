@@ -4,5 +4,9 @@
 *.swp
 
 opengrid.cfg
+houseprint-*.json
 *.idea*
 *.hp
+
+static/downloads/*
+static/sandbox/*
