@@ -104,10 +104,10 @@ def login():
         return redirect(url_for("github.login"))
 
     user = github.get("/user").json()
-    repos = github.get(user['repos_url']).json()
+    orgs = github.get(user['organizations_url']).json()
 
     # if you have opengrid in your repositories, you are a contributor :-)
-    session['contributor'] = 'opengrid' in {repo['name'] for repo in repos}
+    session['contributor'] = 'opengridcc' in {org['login'] for org in orgs}
     session['username'] = user["login"]
 
     if user_is_contributor():
