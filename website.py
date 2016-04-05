@@ -106,7 +106,7 @@ def login():
     user = github.get("/user").json()
     orgs = github.get(user['organizations_url']).json()
 
-    # if you have opengrid in your repositories, you are a contributor :-)
+    # if you have opengridcc in your public organizations, you are a contributor :-)
     session['contributor'] = 'opengridcc' in {org['login'] for org in orgs}
     session['username'] = user["login"]
 
