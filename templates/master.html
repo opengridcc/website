@@ -39,7 +39,6 @@
                 <li><a href="{{ url_for('index') }}">Home</a></li>
                 <li><a href="{{ url_for('data') }}">Data</a></li>
                 <li><a href="{{ url_for('development') }}">Get Involved</a></li>
-                <li><a href="{{ url_for('enquiry') }}">Enquiry</a></li>
                 <li><a href="{{ url_for('search') }}">Search</a></li>
                 {% if g.user_is_authenticated and g.user_is_contributor %}
                 <li><a href="{{ url_for('admin') }}">Admin</a></li>
