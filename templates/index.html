@@ -1,17 +1,45 @@
 {% extends "master.html" %}
 {% block content %}
+
+
     <div class="jumbotron">
-        <h1>Welcome to Opengrid!</h1>
-        <p>Opengrid is a collaborative project about energy and building data mining and automation. We believe
+        <h1>OpenGrid double event!!</h1>
+        <p>
+            On 22-23 April (Friday and Saturday), we organise <em>grid:camp</em>. Saturday afternoon, we also organise
+            <em>OpenGrid café</em>.  Find more information about both events below.
+        </p>
+        <p><a class="btn btn-success btn-lg" href="{{ url_for('events') }}" role="button">Subscribe to grid:camp and/or OpenGrid café</a></p>.
+    </div>
+
+    <div class="left">
+        <h1>grid:camp</h1>
+        <p>
+            Meetup for hackers, barcamp style (= open agenda).  Join us if you have a passion for building monitoring, home automation,
+            electronics, data analysis, energy savings etc...  <br>
+            Free of charge, we'll share costs for food and drinks.  <br>
+            A suggestion for accommodation will be given soon.
+            <br>
+        </p>
+        <img src="{{url_for('static', filename='images/grid.camp.2016.04.final.jpg')}}" />
+
+    </div>
+    <div class="right">
+        <h1>OpenGrid Café</h1>
+        <p>
+            Bijeenkomst van OpenGrid deelnemers en geinteresseerden. Kom eens langs om OpenGrid te ontdekken of
+            om je persoonlijke grafieken te bespreken met de ontwikkelaars. Ook Flukso en EnergieID zullen aanwezig zijn.
+            Kom met suggesties of vragen en drink een glas met andere OpenGrid enthousiastelingen. Deelnemen is geheel gratis.
+        </p>
+        <img src="{{url_for('static', filename='images/grid.cafe.2016.04.final.jpg')}}" />
+    </div>
+    <br><br>
+    <div class="jumbotron">
+        <h1>About OpenGrid</h1>
+        <p>OpenGrid is a collaborative project about energy and building data mining and automation. We believe
         there is a need for open source tools to analyse utility data, smart meter output, comfort measurements etc and to
         gain knowledge from these data streams. This knowledge can then be used to understand consumption patterns, realize
         energy savings, build smart automation applications, enable demand response, ...</p>
         <p><a class="btn btn-primary btn-lg" href="{{ url_for('development') }}" role="button">Subscribe to the project</a></p>
     </div>
-    <!--
-    <h2>About</h2>
-    <p class="well">Opengrid is a collaborative project about energy and building data mining and automation. We believe
-        there is a need for open source tools to analyse utility data, smart meter output, comfort measurements etc and to
-        gain knowledge from these data streams. This knowledge can then be used to understand consumption patterns, realize
-        energy savings, build smart automation applications, enable demand response, ...</p>-->
+    <br/>
 {% endblock %}

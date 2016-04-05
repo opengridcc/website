@@ -146,6 +146,11 @@ def development():
 def enquiry():
     return render_template('enquiry.html')
 
+@app.route("/events")
+def events():
+    return render_template('events.html')
+
+
 @app.route("/sandbox/")
 @app.route("/sandbox/file/<filename>")
 @app.route("/sandbox/upload", methods=['POST'])
