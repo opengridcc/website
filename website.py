@@ -207,7 +207,9 @@ def flukso(fluksoid):
     f = hp.find_device(fluksoid)
 
     if f is None:
-        abort(404)
+        flash('Your FluksoID was not found in our database.\
+        If you want to see OpenGrid analyses for your Flukso, please fill in the form below.')
+        return redirect(url_for('development'))
 
     sensors = f.get_sensors()
     sensors.sort(key=lambda x: x.type)
