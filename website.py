@@ -162,9 +162,13 @@ def sandbox(filename=None):
             flash('File type not allowed, only images, pdf\'s or html')
         else:
             file_name = secure_filename(file.filename)
-            file_path = os.path.join(path, file_name)
-            file.save(file_path)
-            flash('Upload successful')
+            if file_name in os.listdir(path):
+                flash('Upload failed: file name "{}" already taken.\
+                Please change file name and try again.'.format(file_name))
+            else:
+                file_path = os.path.join(path, file_name)
+                file.save(file_path)
+                flash('Upload successful')
 
     #  Request of specific file
     if request.method == 'GET' and filename is not None:
