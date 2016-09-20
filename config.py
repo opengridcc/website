@@ -22,7 +22,8 @@ configuration properties.
 
 from ConfigParser import SafeConfigParser
 import inspect
-import os, sys
+import os
+
 
 class Config(SafeConfigParser):
     """
@@ -47,9 +48,3 @@ class Config(SafeConfigParser):
         if configfile:
             configfiles.append(configfile)
         self.read(configfiles)
-
-
-
-
-
-

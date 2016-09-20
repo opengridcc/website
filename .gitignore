@@ -8,5 +8,5 @@ houseprint-*.json
 *.idea*
 *.hp
 
-static/downloads/*
-static/sandbox/*
+flask_app/static/downloads/*
+flask_app/static/sandbox/*
