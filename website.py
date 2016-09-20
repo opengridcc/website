@@ -158,8 +158,8 @@ def sandbox(filename=None):
         file = request.files['file']
         if file.filename == '':
             flash('Select a valid file to upload')
-        elif get_extension(file.filename) not in {'jpg', 'jpeg', 'gif', 'png', 'pdf', 'html'}:
-            flash('File type not allowed, only images, pdf\'s or html')
+        elif get_extension(file.filename) not in {'jpg', 'jpeg', 'gif', 'png', 'pdf', 'html', 'json'}:
+            flash('File type not allowed, only images, pdf\'s, html or json')
         else:
             file_name = secure_filename(file.filename)
             if file_name in os.listdir(path):
