@@ -10,3 +10,5 @@ houseprint-*.json
 
 flask_app/static/downloads/*
 flask_app/static/sandbox/*
+
+*.DS_Store
