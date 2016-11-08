@@ -20,7 +20,7 @@
         </tr>
         {% for file in files %}
             <tr>
-                <td><a href="/sandbox/file/{{ file.title }}" target="_blank">{{ file.title }}</a></td>
+                <td><a href="/sandbox/file/{{ file.title }}">{{file.title}}</a></td>
                 <td>{{ file.date_modified }}</td>
                 <td>{{ file.filesize }} KB</td>
                 <td>

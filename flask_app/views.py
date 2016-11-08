@@ -98,7 +98,9 @@ def sandbox(filename=None):
     #  Request of specific file
     if request.method == 'GET' and filename is not None:
         file_path = safe_join(path, filename)
-        return send_file(file_path)
+        # send json as attachment
+        as_attachment = get_extension(filename) in {'json'}
+        return send_file(file_path, as_attachment=as_attachment)
 
     #  Delete file
     if request.method == 'POST' and 'delete' in request.url_rule.rule:
