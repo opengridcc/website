@@ -1,12 +1,14 @@
 import os
 import pandas as pd
 import gc
+import json
 
 from flask_dance.contrib.github import github
-from flask import render_template, flash, redirect, url_for, session, request, safe_join, send_file, abort
+from flask import render_template, flash, redirect, url_for, session, \
+    request, safe_join, send_file, abort, Response
 from werkzeug.utils import secure_filename
 
-from flask_app import app, env, hp, c, sandbox_path, download_path
+from flask_app import app, env, hp, c, sandbox_path, download_path, slackbot
 from wrappers import user_is_contributor, login_required, contributor_required
 from forms import SearchForm, DownloadForm, EmptyForm
 import plot
@@ -311,6 +313,26 @@ def download(guid=None):
         'download.html',
         form=form
     )
+
+
+@app.route("/slack_callback", methods=['POST'])
+def slack():
+    payload = request.get_json(force=True)
+
+    message = {
+        "attachments": [
+                {
+                    "fallback": "OpenGrid.be callback",
+                    "pretext": "Hello! This is OpenGrid.be speaking. Somebody pressed a button which has generated this message",
+                    "text": "```{}```".format(json.dumps(payload, indent=2,
+                                                         sort_keys=True)),
+                    "mrkdwn_in": ["text"],
+                }
+            ]
+        }
+    slackbot.post_json(message)
+
+    return Response(status=200)
 
 
 @app.route("/admin", methods=['GET', 'POST'])

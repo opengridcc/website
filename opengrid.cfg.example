@@ -46,3 +46,8 @@ figures: /Users/Jan/opengrid/data/figures
 [github]
 clientid: github client id
 clientsecret: github client secret
+
+[slack]
+webhook: slack webhook url
+username: OpenGrid website local dev version (put your name here)
+channel: junk

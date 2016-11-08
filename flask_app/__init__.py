@@ -18,9 +18,11 @@ except:
 
 try:
     from opengrid.library import houseprint
+    from opengrid.library import slack
 except ImportError:
     sys.path.append(c.get('backend', 'opengrid'))
     from opengrid.library import houseprint
+    from opengrid.library import slack
 
 try:
     hp = houseprint.Houseprint()
@@ -45,5 +47,11 @@ if not os.path.exists(sandbox_path):
 download_path = os.path.join(os.path.dirname(__file__), "static", "downloads")
 if not os.path.exists(download_path):
     os.mkdir(download_path)
+
+slack_url = c.get('slack', 'webhook')
+slack_username = c.get('slack', 'username')
+slack_channel = c.get('slack', 'channel')
+slackbot = slack.Slack(url=slack_url, username=slack_username,
+                       channel=slack_channel)
 
 from flask_app import views
