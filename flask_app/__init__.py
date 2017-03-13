@@ -7,7 +7,7 @@ app = Flask(__name__)
 SECRET_KEY = "secret_key"  # TODO add a real key in the config file
 app.config.from_object(__name__)
 
-import config
+from opengrid import config
 
 c = config.Config()
 
