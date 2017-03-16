@@ -30,7 +30,7 @@
         {% if analysis.is_html() %}
             {{ analysis.get_content()|safe }}
         {% elif analysis.is_figure() %}
-            <img src="/figures/{{ analysis.get_content() }}">
+            <img src="/figures/{{ analysis.get_content() }}" class="img-responsive">
         {% endif %}
         <br>
         <br>
