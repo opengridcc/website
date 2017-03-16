@@ -9,8 +9,8 @@ from flask import render_template, flash, redirect, url_for, session, \
 from werkzeug.utils import secure_filename
 
 from flask_app import app, env, hp, c, sandbox_path, download_path, slackbot
-from wrappers import user_is_contributor, login_required, contributor_required
-from forms import SearchForm, DownloadForm, EmptyForm
+from .wrappers import user_is_contributor, login_required, contributor_required
+from .forms import SearchForm, DownloadForm, EmptyForm
 import plot
 
 
@@ -235,12 +235,56 @@ def sensor(sensorid):
         )
     )
 
-    analyses = [analysis for analysis in analyses if analysis.has_content()]
+    # create multivariable regression plots
+    filename = 'multivar_results_{}.png'.format(s.key)
+    analyses.append(
+        plot.Figure(
+            title='Monthly model and predictions',
+            content=filename,
+            description=u"This plot shows the monthly data and the model for your {sensordescription} <br><br>\
+                             Do you think this is useful? Let us know in the\
+                             <a href=\"https://groups.google.com/d/forum/opengrid-private\">forum</a>.".format(
+                sensordescription=s.description)
+        )
+    )
+    filename = 'multivar_prediction_weekly_{}.png'.format(s.key)
+    analyses.append(
+        plot.Figure(
+            title='Weekly predictions and measurements',
+            content=filename,
+            description=u"This plot shows the weekly expected value and the measured value for your {sensordescription} <br><br>\
+                                 Do you think this is useful? Let us know in the\
+                                 <a href=\"https://groups.google.com/d/forum/opengrid-private\">forum</a>.".format(
+                sensordescription=s.description)
+        )
+    )
+    filename = 'multivar_model_{}.png'.format(s.key)
+    analyses.append(
+        plot.Figure(
+            title='Monthly model',
+            content=filename,
+            description=u"This plot shows the monthly data and the model for your {sensordescription} <br><br>\
+                                 Do you think this is useful? Let us know in the\
+                                 <a href=\"https://groups.google.com/d/forum/opengrid-private\">forum</a>.".format(
+                sensordescription=s.description)
+        )
+    )
+
+    found_analyses = []
+    for analysis in analyses:
+        if analysis.has_content():
+            if type(analysis) == plot.Figure:
+                if figure_exists(analysis._content):
+                    found_analyses.append(analysis)
+            else:
+                found_analyses.append(analysis)
+
+
 
     return render_template(
         'sensor.html',
         sensor=s,
-        analyses=analyses
+        analyses=found_analyses
     )
 
 

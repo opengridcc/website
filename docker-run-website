@@ -1,0 +1,53 @@
+#!/bin/bash
+# On Mac, start docker daemon if not running
+if docker-machine  > /dev/null 2>&1; then
+    docker-machine start
+    docker-machine env
+    eval $(docker-machine env default)
+fi
+# Stop and/or remove existing opengrid-website container, if any
+if docker ps -a | grep -q opengrid-website; then
+	echo "Stopping and/or removing existing opengrid-website container."
+	docker stop opengrid-website > /dev/null
+	docker rm opengrid-website > /dev/null
+fi
+# Check environment variable
+: "${OPENGRIDPATH:?ERROR: no OPENGRIDPATH found.
+Ensure that you have environment variables OPENGRIDPATH and OPENGRIDDATA pointing to the folders with your OpenGrid source code and data.}"
+: "${OPENGRIDDATA:?ERROR: no OPENGRIDDATA found.
+Ensure that you have environment variables OPENGRIDPATH and OPENGRIDDATA pointing to the folders with your OpenGrid source code and data.}"
+echo "The source code for opengrid is in $OPENGRIDPATH"
+echo "The data for opengrid is in $OPENGRIDDATA"
+
+# Start the docker, publish port 5000 to host
+# mount 3 paths:
+# - current folder to /usr/local/website in the container
+# - opengrid source code to /usr/local/opengrid
+# - data to /data
+docker run -d -p 5000:5000 -v $(pwd -P):/usr/local/website -v $OPENGRIDPATH:/usr/local/opengrid  -v  $OPENGRIDDATA:/data --name opengrid-website opengrid/website:latest
+
+# Give it some time
+sleep 5s
+
+URL=http://$(docker-machine ip default):5000
+
+if [ -z "$(docker-machine ip default)"]; then
+	URL="http://localhost:5000"
+fi
+echo "Open the notebook server on $URL"
+
+# open the browser
+if gnome-open $URL > /dev/null 2>&1; then
+echo “OpenGrid website opened in browser”
+elif start $URL > /dev/null 2>&1; then
+echo “OpenGrid website opened in browser”
+elif open $URL > /dev/null 2>&1; then
+echo “OpenGrid website opened in browser”
+elif xdg-open $URL > /dev/null 2>&1; then
+echo “OpenGrid website opened in browser”
+
+else
+echo “Opening website in browser failed, surf to $URL“
+fi
+
+echo "To stop the docker machine run 'docker-machine stop'"
