@@ -330,10 +330,12 @@ def download_regression(guid=None):
     if request.method == 'POST' and form.validate():
         try:
             mvreg_sensor.compute(form.guid.data, pd.Timestamp(form.start.data), pd.Timestamp(form.end.data))
+            flash("Succes")
         except Exception as e:
             print(e)
             flash(str(e))
-
+    else:
+        flash("Form not validated")
     if guid is not None:
         form.guid.data = guid
 
