@@ -16,5 +16,14 @@ class DownloadForm(Form):
     resample = SelectField('resample', choices=[('min','minutes'), ('h','hours'), ('d', 'days'), ('w', 'week'), ('m', 'month'), ('raw', 'raw')])
 
 
+class DownloadRegressionForm(Form):
+    guid = StringField('sensor_id', validators=[DataRequired()])
+    start = DateField('start', default=dt.date(year=2016, month=1, day=1))
+    end = DateField('end', default=dt.date.today())
+    resample = SelectField('resample',
+                           choices=[('min', 'minutes'), ('h', 'hours'), ('d', 'days'), ('w', 'week'), ('m', 'month'),
+                                    ('raw', 'raw')])
+
+
 class EmptyForm(Form):
     pass

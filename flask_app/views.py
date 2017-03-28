@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import gc
+import sys
 import json
 
 from flask_dance.contrib.github import github
@@ -10,8 +11,12 @@ from werkzeug.utils import secure_filename
 
 from flask_app import app, env, hp, c, sandbox_path, download_path, slackbot
 from .wrappers import user_is_contributor, login_required, contributor_required
-from .forms import SearchForm, DownloadForm, EmptyForm
+from .forms import SearchForm, DownloadForm, DownloadRegressionForm, EmptyForm
 import plot
+
+
+sys.path.append("/usr/local/opengrid")
+from opengrid.recipes import mvreg_sensor
 
 
 @app.route("/")
@@ -316,6 +321,26 @@ def search():
     return render_template(
         "search.html",
         form=form)
+
+
+@app.route("/test", methods=['GET', 'POST'])
+@app.route("/test/<guid>")
+def download_regression(guid=None):
+    form = DownloadRegressionForm()
+    if request.method == 'POST' and form.validate():
+        try:
+            mvreg_sensor.compute(form.guid.data, pd.Timestamp(form.start.data), pd.Timestamp(form.end.data))
+        except Exception as e:
+            print(e)
+            flash(str(e))
+
+    if guid is not None:
+        form.guid.data = guid
+
+    return render_template(
+        'download_regression.html',
+        form=form
+    )
 
 
 @app.route("/download", methods=['GET', 'POST'])

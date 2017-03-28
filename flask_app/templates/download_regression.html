@@ -1,10 +1,10 @@
 {% extends "master.html" %}
 {% block content %}
-<h1>Download</h1>
-<p>Download sensor data as CSV</p>
+<h1>Download Regression</h1>
+<p>Download regression sensor data as CSV</p>
 <div class="well">
     {% from "_formhelpers.html" import render_field %}
-    <form method=post action="/download">
+    <form method=post action="/test">
         {{ form.hidden_tag() }}
         <dl>
             <label class="control-label">Sensor or Flukso ID:</label>
