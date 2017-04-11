@@ -11,7 +11,7 @@ from werkzeug.utils import secure_filename
 
 from flask_app import app, env, hp, c, sandbox_path, download_path, slackbot
 from .wrappers import user_is_contributor, login_required, contributor_required
-from .forms import SearchForm, DownloadForm, DownloadRegressionForm, EmptyForm
+from .forms import SearchForm, DownloadForm, DownloadRegressionForm, EmptyForm, Recalculate
 import plot
 
 
@@ -154,12 +154,23 @@ def flukso(fluksoid):
     )
 
 
-@app.route("/sensor/<sensorid>")
+@app.route("/sensor/<sensorid>", methods=['GET', 'POST'])
 def sensor(sensorid):
     s = hp.find_sensor(sensorid)
 
     if s is None:
         abort(404)
+
+    form = Recalculate()
+    if request.method == 'POST' and form.validate():
+        try:
+            mvreg_sensor.compute(s, pd.Timestamp(form.start.data), pd.Timestamp(form.end.data))
+            flash("Succes")
+        except Exception as e:
+            print(e)
+            flash(str(e))
+    else:
+        flash("Form not validated")
 
     path = c.get('backend', 'figures')
 
@@ -284,12 +295,11 @@ def sensor(sensorid):
             else:
                 found_analyses.append(analysis)
 
-
-
     return render_template(
         'sensor.html',
         sensor=s,
-        analyses=found_analyses
+        analyses=found_analyses,
+        form=form
     )
 
 

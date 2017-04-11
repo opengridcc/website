@@ -26,6 +26,11 @@ class DownloadRegressionForm(Form):
                            choices=[('min', 'minutes'), ('h', 'hours'), ('d', 'days'), ('w', 'week'), ('m', 'month'),
                                     ('raw', 'raw')])
 
+class Recalculate(Form):
+    dt2 = DateField('Pick a Date', format="%m/%d/%Y")
+    start = DateField('start', format="%m/%d/%Y", default=dt.date(year=2017, month=1, day=1))
+    end = DateField('end', format="%m/%d/%Y", default=dt.date.today())
+
 
 class EmptyForm(Form):
     pass

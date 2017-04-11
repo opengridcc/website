@@ -23,6 +23,21 @@
         {% endfor %}
     </div>
 
+    <h2>Recalculate analysis for new timeperiod</h2>
+    <div class="well">
+        {% from "_formhelpers.html" import render_field %}
+        <form method=post action="/sensor/{{ sensor.key }}">
+            {{ form.hidden_tag() }}
+            <dl>
+                <label class="control-label">Start date:</label></br>
+                {{ form.start(class="dtpick") }} </br>
+                <label class="control-label">End date:</label></br>
+                {{ form.end(class="dtpick") }} </br>
+            </dl>
+        <p><input class="btn btn-primary" type=submit value=Recalculate>
+        </form>
+    </div>
+
     {% for analysis in analyses %}
     <a name="{{ analysis.title }}"></a>
     <h1>{{ analysis.title }}</h1>
