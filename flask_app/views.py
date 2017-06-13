@@ -403,7 +403,7 @@ def slack():
     try:
         payload = raw['payload']  # it is a button callback
     except BadRequestKeyError:
-        payload = dict(raw)  # it is a command
+        payload = raw.to_dict(flat=True)  # it is a command
     else:
         payload = json.loads(payload)
 
