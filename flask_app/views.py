@@ -398,17 +398,14 @@ def download(guid=None):
 
 @app.route("/slack_callback", methods=['POST'])
 def slack():
-    try:
-        payload = request.get_json(force=True)
-    except:
-        payload = request.data
+    raw = request.form
 
     message = {
         "attachments": [
                 {
                     "fallback": "OpenGrid.be callback",
                     "pretext": "Hello! This is OpenGrid.be speaking. Somebody has sent me this message but I don't know what to do with it",
-                    "text": "```{}```".format(payload),
+                    "text": "```{}```".format(raw),
                     "mrkdwn_in": ["text"],
                 }
             ]
