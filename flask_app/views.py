@@ -399,7 +399,7 @@ def download(guid=None):
 @app.route("/slack_callback", methods=['POST'])
 def slack():
     try:
-        payload = request.get_json()
+        payload = request.get_json(force=True)
     except:
         payload = request.data
 
