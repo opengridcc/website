@@ -8,6 +8,7 @@ from flask_dance.contrib.github import github
 from flask import render_template, flash, redirect, url_for, session, \
     request, safe_join, send_file, abort, Response
 from werkzeug.utils import secure_filename
+from werkzeug.exceptions import BadRequestKeyError
 
 from flask_app import app, env, hp, c, sandbox_path, download_path, slackbot
 from .wrappers import user_is_contributor, login_required, contributor_required
@@ -399,13 +400,19 @@ def download(guid=None):
 @app.route("/slack_callback", methods=['POST'])
 def slack():
     raw = request.form
+    try:
+        payload = raw['payload']  # it is a button callback
+    except BadRequestKeyError:
+        payload = dict(raw)  # it is a command
+    else:
+        payload = json.loads(payload)
 
     message = {
         "attachments": [
                 {
                     "fallback": "OpenGrid.be callback",
                     "pretext": "Hello! This is OpenGrid.be speaking. Somebody has sent me this message but I don't know what to do with it",
-                    "text": "```{}```".format(raw),
+                    "text": "```{}```".format(json.dumps(payload, indent=2)),
                     "mrkdwn_in": ["text"],
                 }
             ]
