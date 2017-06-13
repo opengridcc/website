@@ -398,7 +398,10 @@ def download(guid=None):
 
 @app.route("/slack_callback", methods=['POST'])
 def slack():
-    payload = request.data
+    try:
+        payload = request.get_json()
+    except:
+        payload = request.data
 
     message = {
         "attachments": [
