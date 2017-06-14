@@ -51,3 +51,4 @@ clientsecret: github client secret
 webhook: slack webhook url
 username: OpenGrid website local dev version (put your name here)
 channel: junk
+verification_token: slack verification token
