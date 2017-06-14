@@ -408,7 +408,7 @@ def slack():
         payload = json.loads(payload)
 
     verification_token = c.get('slack', 'verification_token')
-    message_token = payload['token']
+    message_token = payload.get('token', '')
     if not verification_token == message_token:
         return Response(status=401)
 
